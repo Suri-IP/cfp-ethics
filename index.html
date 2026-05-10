@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>จรรยาบรรณ CFP — เกมช่วยจำ</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700;800&family=Sarabun:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #FFFFEB;
+  --blue:   #0549FE;
+  --green:  #33DF93;
+  --yellow: #E2FF1E;
+  --pink:   #FF53FF;
+  --black:  #1A1A1A;
+  --gold:   #E4D64D;
+  --muted:  #888;
+  --white:  #fff;
+  --border: #E0DFDF;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);font-family:'Prompt',sans-serif;color:var(--black);min-height:100vh;overflow-x:hidden}
+.screen{display:none;flex-direction:column;align-items:center;min-height:100vh}
+.screen.active{display:flex}
+
+/* ===== HOME ===== */
+#home-screen{background:var(--bg);padding-bottom:100px}
+
+/* Full-width content column, max 420px, 18px side padding */
+.home-col{width:100%;max-width:420px;padding:0 18px}
+
+/* Top section */
+.home-top{padding-top:13px;padding-bottom:0}
+
+/* Badge pill */
+.badge-row{display:flex;align-items:center;gap:0;margin-bottom:13px}
+.badge-pill{
+  background:var(--blue);color:var(--white);
+  font-size:.72rem;font-weight:700;letter-spacing:.6px;
+  padding:5px 14px;border-radius:20px;
+  display:inline-flex;align-items:center;gap:10px;
+}
+/* Stars OUTSIDE badge, inline after */
+.badge-stars{
+  display:inline-flex;gap:2px;margin-left:4px
+}
+.star-icon{
+  /* Rounded star shape using SVG path from file */
+  width:16px;height:16px;display:block
+}
+
+.home-title{
+  font-size:2.85rem;font-weight:800;line-height:1;
+  letter-spacing:0px;color:var(--black);margin-bottom:13px
+}
+
+/* ===== CARD STACK =====
+  Based on SVG proportions (scaled 402px→384px content):
+  CFP1: height 230px (265 * 384/442 ≈ 230)
+  CFP2: height 109px (125 * 384/442 ≈ 108)
+  Gap between: ~10px (485-474=11 * scale)
+*/
+.cards-stack{
+  position:relative;
+  display:flex;flex-direction:column;gap:9px;
+  margin-bottom:10px;
+  overflow:visible;
+  height:348px
+}
+
+/* Shared card base */
+.main-card{
+  width:100%;
+  background:var(--blue);
+  border-radius:17px; /* 19px in SVG scaled */
+  position:relative;
+  overflow:hidden;
+  cursor:pointer;transition:transform .14s
+}
+.main-card:active{transform:scale(.97)}
+.card-cfp1{
+  height:230px; /* CFP1 taller */
+  cursor:default
+}
+.card-cfp2{
+  height:109px; /* CFP2 shorter */
+}
+
+/* Card inner text layout */
+/* CFP1: text centered vertically (justify-content:center) */
+.card-inner{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  padding:20px 140px 20px 24px; /* right padding leaves room for character */
+  display:flex;flex-direction:column;justify-content:center;
+  z-index:2
+}
+/* CFP2: text centered vertically, right-aligned, left padding for character */
+.card-inner-right{
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
+  padding:14px 22px 14px 130px; /* left padding leaves room for character */
+  display:flex;flex-direction:column;justify-content:center;
+  align-items:flex-end;
+  z-index:2
+}
+.card-label{font-size:2.2rem;font-weight:800;color:#fff;line-height:1;margin-bottom:5px;letter-spacing:2px}
+.card-sub{font-size:.78rem;color:rgba(255,255,255,.58);font-family:'Sarabun',sans-serif}
+
+/* ===== CHARACTERS =====
+  finger-1.svg viewBox 215x260, green shape inside: x=48..181(w=133), y=22..259(h=237)
+  finger-2.svg viewBox 209x208, green shape inside: x=25..189(w=164), y=32..208(h=176)
+
+  To fill the shape to the correct pixel size, we render the SVG LARGER
+  than the shape target and offset it so whitespace falls outside the container.
+
+  Finger-1: render at 188x226px
+    shape occupies x:[42..158], y:[19..225] within the rendered SVG
+    position right:-30px so right edge of shape = card right
+    position bottom:-1px so bottom of shape = card bottom
+    gap at card top ≈ 23px ✓
+
+  Finger-2: render at 182x181px
+    shape occupies x:[22..165], y:[28..181] within the rendered SVG
+    SVG bottom flush with CFP2 card bottom
+    SVG top at stack position 167px → shape top at 195px (35px into CFP1 body)
+    position left:-2px (slight left overhang of shape whitespace)
+*/
+
+/* Finger-1: bottom:118px = CFP1 bottom (stack 348px - CFP1 bot 230px = 118px)
+   right:-30px = shape right edge flush with card right (svg has 30px whitespace on right) */
+.char-cfp1{
+  position:absolute;
+  right:-11px;
+  bottom:117px;
+  width:188px;
+  height:226px;
+  z-index:10;
+  pointer-events:none
+}
+.char-cfp1 svg{width:188px;height:226px;display:block}
+
+/* Finger-2: rendered 182x181
+   In .cards-stack: CFP2 top=239px, CFP2 bot=348px
+   SVG height=181 → svg top = 348-181 = 167px from stack top
+   Shape top in stack = 167+28 = 195px → bleeds 44px above CFP2 (239-195=44px)
+   That is 35px into CFP1 body (230-195=35px = 15% of CFP1 height)
+   left:-2px slight overhang of SVG whitespace
+*/
+.char-cfp2-wrap{
+  position:absolute;
+  top:167px;
+  left:-2px;
+  width:182px;
+  height:181px;
+  z-index:10;
+  pointer-events:none
+}
+.char-cfp2-wrap svg{width:182px;height:181px;display:block}
+
+/* ===== SMALL CARDS =====
+  SVG: pink x=41..236, green x=248..443, both y=621..816
+  Width each: 195px in SVG → gap=12px in SVG
+  Height: 195px → scaled ≈ 170px
+*/
+.small-row{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-bottom:0
+}
+.small-card{
+  border-radius:17px;
+  padding:16px 16px 18px;
+  min-height:170px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  cursor:pointer;transition:transform .14s
+}
+.small-card:active{transform:scale(.97)}
+.sc-pink{background:var(--pink)}
+.sc-green{background:var(--green)}
+.small-label{font-size:.86rem;font-weight:700;color:#fff;line-height:1.4}
+
+/* ===== BOTTOM NAV =====
+  SVG: nav circles at cy=894.5, r=33 → diameter=66
+  Scaled: r=29 → diameter=57px ≈ 56px
+  Nav sep line at y=838 → acts as top border
+  3 circles centered: cx=168.5/241.5/314.5
+  Spacing between centers: 73px → scaled ≈ 63px
+*/
+.bottom-nav{
+  position:fixed;bottom:0;left:0;right:0;
+  background:var(--bg);
+  border-top:2px solid var(--border);
+  display:flex;justify-content:center;
+  align-items:center;
+  gap:14px;
+  padding:12px 0 24px;
+  z-index:1000
+}
+.nav-btn{
+  width:56px;height:56px;border-radius:50%;border:none;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:transform .13s;flex-shrink:0;
+  padding:0
+}
+.nav-btn:active{transform:scale(.9)}
+.nb-blue{background:var(--blue)}
+.nb-pink{background:var(--pink)}
+.nb-green{background:var(--green)}
+
+/* ===== LEVEL SELECT ===== */
+#level-screen{background:var(--bg)}
+.lvl-header{
+  width:100%;background:var(--blue);
+  display:flex;align-items:center;gap:12px;
+  padding:18px 18px 20px
+}
+.back-btn{
+  width:36px;height:36px;border-radius:9px;
+  border:1px solid rgba(255,255,255,.25);background:transparent;
+  color:#fff;font-size:1.1rem;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center
+}
+.back-btn:active{transform:scale(.9)}
+.lvl-htitle{font-size:.95rem;font-weight:700;color:#fff}
+.lvl-hsub{font-size:.7rem;color:rgba(255,255,255,.5);font-family:'Sarabun',sans-serif}
+.lvl-list{width:100%;max-width:420px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.lvl-item{
+  background:#fff;border:1px solid #e0ded6;
+  border-radius:15px;padding:14px 16px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;transition:transform .14s;box-shadow:var(--shadow)
+}
+.lvl-item:active{transform:scale(.98)}
+.lvl-num{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.85rem;font-weight:800;flex-shrink:0
+}
+.lvl-name{font-size:.88rem;font-weight:700;margin-bottom:2px}
+.lvl-meta{font-size:.7rem;color:var(--muted);font-family:'Sarabun',sans-serif}
+.lvl-badge{font-size:.66rem;font-weight:700;padding:3px 9px;border-radius:20px;flex-shrink:0}
+.badge-free{background:rgba(51,223,147,.22);color:#006640}
+
+/* ===== GAME ===== */
+#game-screen{background:var(--bg);justify-content:flex-start}
+.game-bar{
+  width:100%;background:var(--blue);
+  display:flex;align-items:center;gap:10px;
+  padding:11px 14px;position:sticky;top:0;z-index:100
+}
+.gb-info{flex:1}
+.gb-title{font-size:.84rem;font-weight:700;color:#fff;line-height:1.2}
+.gb-sub{font-size:.67rem;color:rgba(255,255,255,.5);font-family:'Sarabun',sans-serif}
+.timer-box{
+  background:var(--yellow);color:var(--black);
+  border-radius:9px;padding:5px 11px;text-align:center;min-width:50px
+}
+.timer-val{font-size:1.1rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.timer-lbl{font-size:.52rem;opacity:.55;letter-spacing:.8px}
+.timer-box.urgent{background:#e63946;color:#fff;animation:pulse .5s infinite alternate}
+@keyframes pulse{from{opacity:1}to{opacity:.6}}
+
+.game-body{width:100%;max-width:420px;padding:13px 14px;display:flex;flex-direction:column;gap:11px;flex:1}
+.desc-banner{
+  background:#fff;border:1px solid #e0ded6;
+  border-radius:13px;padding:13px 15px;
+  font-family:'Sarabun',sans-serif;font-size:.82rem;line-height:1.85;
+  box-shadow:var(--shadow)
+}
+.cols-header{display:grid;gap:7px}
+.col-head{
+  border-radius:11px;padding:9px 6px;text-align:center;
+  font-size:.74rem;font-weight:700;line-height:1.35;
+  min-height:44px;display:flex;align-items:center;justify-content:center
+}
+.ch0{background:var(--blue);color:#fff}
+.ch1{background:var(--green);color:var(--black)}
+.ch2{background:var(--pink);color:#fff}
+.drop-zones{display:grid;gap:7px}
+.drop-zone{
+  border-radius:13px;padding:7px;min-height:72px;
+  display:flex;flex-direction:column;gap:5px;
+  transition:all .18s;position:relative
+}
+.dz0{background:rgba(5,73,254,.05);border:2px dashed rgba(5,73,254,.22)}
+.dz1{background:rgba(51,223,147,.06);border:2px dashed rgba(51,223,147,.35)}
+.dz2{background:rgba(255,83,255,.05);border:2px dashed rgba(255,83,255,.28)}
+.dz0.drag-over{background:rgba(5,73,254,.11);border-color:var(--blue)}
+.dz1.drag-over{background:rgba(51,223,147,.13);border-color:#22c07c}
+.dz2.drag-over{background:rgba(255,83,255,.11);border-color:var(--pink)}
+.dz-hint{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:.66rem;color:var(--muted);opacity:.55;
+  pointer-events:none;white-space:nowrap;font-family:'Sarabun',sans-serif
+}
+.wb-label{
+  font-size:.66rem;color:var(--muted);letter-spacing:.5px;
+  text-transform:uppercase;font-family:'Sarabun',sans-serif;text-align:center
+}
+.word-bank{
+  background:#fff;border:1px solid #e0ded6;
+  border-radius:15px;padding:13px;
+  display:flex;flex-wrap:wrap;gap:7px;justify-content:center;
+  min-height:58px;box-shadow:var(--shadow)
+}
+.word-card{
+  background:#f5f5ee;border:2px solid #e0ded6;
+  border-radius:9px;padding:7px 12px;
+  font-size:.8rem;font-weight:600;
+  cursor:grab;user-select:none;touch-action:none;
+  transition:all .14s;text-align:center;line-height:1.4
+}
+.word-card:active,.word-card.dragging{
+  cursor:grabbing;transform:scale(1.07) rotate(1.5deg);
+  box-shadow:var(--shadow-lg);border-color:var(--blue);background:#fff
+}
+.word-card.placed-0{border-color:rgba(5,73,254,.55);background:rgba(5,73,254,.07)}
+.word-card.placed-1{border-color:rgba(51,223,147,.65);background:rgba(51,223,147,.09)}
+.word-card.placed-2{border-color:rgba(255,83,255,.55);background:rgba(255,83,255,.07)}
+.submit-wrap{padding-bottom:22px}
+.submit-btn{
+  width:100%;padding:14px;background:var(--blue);color:#fff;
+  border:none;border-radius:13px;font-family:'Prompt',sans-serif;
+  font-size:.95rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(5,73,254,.3);transition:transform .15s
+}
+.submit-btn:active{transform:scale(.98)}
+.drag-ghost{
+  position:fixed;pointer-events:none;z-index:9999;
+  background:#fff;border:2px solid var(--blue);border-radius:9px;
+  padding:7px 12px;font-family:'Prompt',sans-serif;
+  font-size:.8rem;font-weight:600;color:var(--black);
+  box-shadow:var(--shadow-lg);
+  transform:translate(-50%,-50%) scale(1.07) rotate(1.5deg);white-space:nowrap
+}
+
+/* ===== RESULT ===== */
+#result-screen{background:var(--bg);justify-content:flex-start}
+.result-hdr{width:100%;padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden}
+.result-emoji{font-size:54px;display:block;animation:bounceIn .5s ease;margin-bottom:8px}
+@keyframes bounceIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+.result-heading{font-size:1.55rem;font-weight:800;margin-bottom:4px}
+.result-sublabel{font-size:.78rem;color:rgba(26,26,26,.5);font-family:'Sarabun',sans-serif}
+.result-body{width:100%;max-width:420px;padding:18px 16px;display:flex;flex-direction:column;gap:12px}
+.score-card{
+  background:#fff;border:1px solid #e0ded6;border-radius:15px;
+  padding:18px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;box-shadow:var(--shadow)
+}
+.score-stat{text-align:center}
+.score-val{font-size:1.45rem;font-weight:800;line-height:1}
+.score-lbl{font-size:.68rem;color:var(--muted);font-family:'Sarabun',sans-serif;margin-top:3px}
+.review-box{background:#fff;border:1px solid #e0ded6;border-radius:15px;padding:14px;box-shadow:var(--shadow)}
+.review-hd{font-size:.78rem;font-weight:700;opacity:.5;margin-bottom:10px}
+.review-item{display:flex;align-items:flex-start;gap:9px;padding:8px 0;border-bottom:1px solid #e0ded6}
+.review-item:last-child{border-bottom:none}
+.rv-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.dot-ok{background:#22c07c}.dot-no{background:#e63946}
+.rv-word{font-weight:600;flex:1;font-size:.78rem;line-height:1.4}
+.rv-ans{font-family:'Sarabun',sans-serif;font-size:.76rem;text-align:right;min-width:60px}
+.rv-ans.ok{color:#006640;font-weight:600}.rv-ans.no{color:#e63946}
+.result-btns{display:flex;flex-direction:column;gap:9px;padding-bottom:30px}
+.btn-blue{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:13px;font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(5,73,254,.28);transition:transform .15s}
+.btn-outline{width:100%;padding:13px;background:#fff;color:var(--black);border:1px solid #e0ded6;border-radius:13px;font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:600;cursor:pointer}
+.btn-green{width:100%;padding:13px;background:var(--green);color:var(--black);border:none;border-radius:13px;font-family:'Prompt',sans-serif;font-size:.93rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(51,223,147,.3)}
+.btn-blue:active,.btn-outline:active,.btn-green:active{transform:scale(.98)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:9000;display:none;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-sheet{width:100%;max-width:420px;background:#fff;border-radius:20px 20px 0 0;padding:22px 18px 38px;animation:slideUp .3s ease;max-height:80vh;overflow-y:auto}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.modal-handle{width:38px;height:4px;background:#e0ded6;border-radius:2px;margin:0 auto 18px}
+.modal-title{font-size:.97rem;font-weight:700;margin-bottom:14px}
+.exp-item{padding:11px 0;border-bottom:1px solid #e0ded6;font-family:'Sarabun',sans-serif}
+.exp-item:last-child{border-bottom:none}
+.exp-term{font-weight:700;font-size:.88rem;margin-bottom:4px;font-family:'Prompt',sans-serif}
+.exp-text{font-size:.81rem;color:var(--muted);line-height:1.8}
+.modal-close{width:100%;margin-top:18px;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:11px;font-family:'Prompt',sans-serif;font-weight:600;font-size:.88rem;cursor:pointer}
+
+/* Confetti */
+.confetti-wrap{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:9999}
+.confetti-dot{position:absolute;top:-20px;border-radius:2px;animation:cfall linear forwards}
+@keyframes cfall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* ===== CALENDAR SCREEN ===== */
+#calendar-screen{background:var(--bg);justify-content:flex-start;overflow-y:auto}
+.cal-header{
+  width:100%;background:var(--pink);
+  display:flex;align-items:center;gap:12px;
+  padding:18px 18px 20px
+}
+.cal-htitle{font-size:.95rem;font-weight:700;color:#fff}
+.cal-hsub{font-size:.7rem;color:rgba(255,255,255,.6);font-family:"Sarabun",sans-serif}
+.cal-body{width:100%;max-width:420px;padding:20px 18px 120px;display:flex;flex-direction:column;gap:16px}
+
+.countdown-display{
+  background:var(--pink);border-radius:20px;
+  padding:28px 24px;text-align:center;color:#fff
+}
+.countdown-display.empty{
+  background:#fff;border:2px dashed #e0ded6;color:var(--muted)
+}
+.cd-days{font-size:3.5rem;font-weight:800;line-height:1;margin-bottom:4px}
+.cd-label{font-size:.82rem;font-family:"Sarabun",sans-serif;opacity:.85;margin-bottom:8px}
+.cd-hours{font-size:1.1rem;font-weight:700;opacity:.9}
+.cd-empty-text{font-size:.9rem;font-family:"Sarabun",sans-serif}
+
+.cal-section-title{font-size:.78rem;font-weight:700;opacity:.5;letter-spacing:.5px}
+.date-picker-wrap{
+  background:#fff;border:1px solid #e0ded6;
+  border-radius:16px;padding:18px;box-shadow:0 2px 12px rgba(0,0,0,.08)
+}
+.date-picker-label{font-size:.8rem;color:var(--muted);font-family:"Sarabun",sans-serif;margin-bottom:10px}
+.date-input{
+  width:100%;padding:12px 14px;
+  border:2px solid #e0ded6;border-radius:11px;
+  font-family:"Prompt",sans-serif;font-size:.95rem;
+  color:var(--black);background:#fff;outline:none;
+  transition:border-color .15s
+}
+.date-input:focus{border-color:var(--pink)}
+.date-save-btn{
+  width:100%;padding:14px;background:var(--pink);color:#fff;
+  border:none;border-radius:13px;font-family:"Prompt",sans-serif;
+  font-size:.95rem;font-weight:700;cursor:pointer;
+  box-shadow:0 4px 16px rgba(255,83,255,.28);transition:transform .15s;margin-top:10px
+}
+.date-save-btn:active{transform:scale(.98)}
+.date-clear-btn{
+  width:100%;padding:12px;background:#fff;color:var(--muted);
+  border:1px solid #e0ded6;border-radius:13px;
+  font-family:"Prompt",sans-serif;font-size:.88rem;cursor:pointer;margin-top:6px
+}
+
+/* COMING SOON */
+#coming-soon-screen{background:var(--bg);justify-content:flex-start}
+.cs-header{width:100%;background:var(--blue);display:flex;align-items:center;gap:12px;padding:18px 18px 20px}
+.cs-htitle{font-size:.95rem;font-weight:700;color:#fff}
+.cs-body{width:100%;max-width:420px;padding:60px 18px;display:flex;flex-direction:column;align-items:center;gap:20px;text-align:center}
+.cs-icon{font-size:72px;line-height:1;animation:wobble 2s ease infinite}
+@keyframes wobble{0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)}}
+.cs-title{font-size:1.3rem;font-weight:800;color:var(--black)}
+.cs-sub{font-size:.88rem;color:var(--muted);font-family:'Sarabun',sans-serif;line-height:1.8}
+
+/* EXAM SCHEDULE */
+.cal-section-title{font-size:.75rem;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
+.schedule-wrap{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:var(--shadow)}
+.sch-accordion{border-bottom:1px solid var(--border)}
+.sch-accordion:last-child{border-bottom:none}
+.sch-head{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;cursor:pointer;transition:background .15s;
+  user-select:none;-webkit-tap-highlight-color:transparent
+}
+.sch-head:active{background:#f5f5f0}
+.sch-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.sch-dot-1{background:var(--blue)}
+.sch-dot-2{background:var(--green)}
+.sch-dot-3{background:var(--pink)}
+.sch-head-text{flex:1}
+.sch-name{font-size:.85rem;font-weight:700;color:var(--black);line-height:1.2}
+.sch-sub{font-size:.7rem;color:var(--muted);font-family:'Sarabun',sans-serif;margin-top:2px}
+.sch-arrow{font-size:.8rem;color:var(--muted);transition:transform .25s}
+.sch-arrow.open{transform:rotate(180deg)}
+.sch-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .3s ease;
+}
+.sch-body.open{max-height:800px}
+.sch-table{width:100%;border-collapse:collapse;font-family:'Sarabun',sans-serif}
+.sch-table th{
+  background:#f5f5f0;font-size:.72rem;font-weight:700;
+  padding:8px 12px;text-align:left;color:var(--muted);
+  letter-spacing:.3px;border-bottom:1px solid var(--border)
+}
+.sch-table td{
+  padding:9px 12px;font-size:.8rem;border-bottom:1px solid var(--border);
+  vertical-align:middle;line-height:1.4
+}
+.sch-table tr:last-child td{border-bottom:none}
+.sch-table tr:nth-child(even) td{background:#fafaf8}
+.sch-round{
+  display:inline-block;background:var(--blue);color:#fff;
+  font-size:.65rem;font-weight:700;padding:2px 8px;
+  border-radius:20px;white-space:nowrap
+}
+.sch-na{color:#ccc;font-size:.78rem}
+.sch-time{font-size:.75rem;color:var(--muted);margin-top:2px}
+#schedule-section{display:none}
+#schedule-section .cal-section-title{margin-top:8px}
+</style>
+</head>
+<body>
+
+<!-- ========== HOME ========== -->
+<div class="screen active" id="home-screen">
+  <div class="home-col">
+    <div class="home-top">
+
+      <!-- Badge + Stars row: stars are OUTSIDE the badge pill -->
+      <div class="badge-row">
+        <div class="badge-pill">เกมช่วยจำ – CFP</div>
+        <div class="badge-stars">
+          <!-- Rounded star × 3 (gold #E4D64D, no sharp tips via large rx) -->
+          <svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#E4D64D" d="M10,2.5 L11.6,7.2 H16.6 L12.6,10 L14.1,14.8 L10,12 L5.9,14.8 L7.4,10 L3.4,7.2 H8.4 Z"
+              stroke="#E4D64D" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          <svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#E4D64D" d="M10,2.5 L11.6,7.2 H16.6 L12.6,10 L14.1,14.8 L10,12 L5.9,14.8 L7.4,10 L3.4,7.2 H8.4 Z"
+              stroke="#E4D64D" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          <svg width="18" height="18" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#E4D64D" d="M10,2.5 L11.6,7.2 H16.6 L12.6,10 L14.1,14.8 L10,12 L5.9,14.8 L7.4,10 L3.4,7.2 H8.4 Z"
+              stroke="#E4D64D" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="home-title">จรรยาบรรณ</div>
+    </div>
+
+    <!-- Cards stack: position:relative so char-cfp2-wrap can bleed up -->
+    <div class="cards-stack" style="position:relative">
+
+      <!-- CFP1 card — tall, text centered-left -->
+      <div class="main-card card-cfp1" onclick="goToComingSoon('CFP1')" style="cursor:pointer">
+        <div class="card-inner">
+          <div>
+            <div class="card-label">CFP1</div>
+            <div class="card-sub">1 บทเรียน · 1 ด่าน</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- finger-1: absolute in cards-stack, right side, top of SVG at stack y=4px
+           SVG 188x226 rendered; shape inside at x:[42..158] y:[19..225]
+           right:-30 aligns shape right to card right; top:4 puts shape top ~23px from card top
+      -->
+      <div class="char-cfp1">
+        <svg id="finger1-svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 215 260" width="188" height="226">
+          <path fill="#33DF93" d="M181,259H48V88.5C48,51.8,77.8,22,114.5,22h0c36.7,0,66.5,29.8,66.5,66.5V259z"/>
+          <!-- white eye sockets -->
+          <circle fill="#fff" cx="69" cy="116" r="28"/>
+          <circle fill="#fff" cx="127" cy="116" r="28"/>
+          <!-- black pupils - animated -->
+          <circle id="f1-pupil-l" fill="#1A1A1A" cx="58" cy="116" r="14"/>
+          <circle id="f1-pupil-r" fill="#1A1A1A" cx="116" cy="116" r="14"/>
+          <!-- mouth - animated -->
+          <path id="f1-mouth" fill="none" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-miterlimit="10" d="M89,160c0,0,1.3,2.2,5.7,2.1c6.5-0.3,9.3-4.1,9.3-4.1"/>
+        </svg>
+      </div>
+
+      <!-- CFP2 card — short, text bottom-right, finger-2 positioned via wrapper that bleeds up -->
+      <div class="main-card card-cfp2" onclick="goToLevelSelect()">
+        <div class="card-inner-right">
+          <div style="text-align:right">
+            <div class="card-label">CFP2</div>
+            <div class="card-sub" id="cfp2-card-sub">— กำลังโหลด —</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- finger-2: absolute in cards-stack
+           SVG 182x181; shape inside at x:[22..165] y:[28..181]
+           top:167px → svg bottom=167+181=348=CFP2 bot ✓ shape bottom flush with CFP2
+           shape top in stack=167+28=195px → bleeds 44px above CFP2(239), 35px into CFP1
+           left:-2px slight overhang to match SVG layout
+      -->
+      <div class="char-cfp2-wrap">
+        <svg id="finger2-svg" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 209 208" width="182" height="181">
+          <path fill="#33DF93" d="M38,208h133V107.5c0-36.7-29.8-66.5-66.5-66.5h0C67.8,41,38,70.8,38,107.5V208z"/>
+          <!-- white eye sockets -->
+          <circle fill="#fff" cx="150" cy="135" r="28"/>
+          <circle fill="#fff" cx="92" cy="135" r="28"/>
+          <!-- black pupils - animated -->
+          <circle id="f2-pupil-r" fill="#1A1A1A" cx="161" cy="135" r="14"/>
+          <circle id="f2-pupil-l" fill="#1A1A1A" cx="103" cy="135" r="14"/>
+          <!-- mouth - animated -->
+          <path id="f2-mouth" fill="none" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-miterlimit="10" d="M130,179c0,0-1.3,2.2-5.7,2.1c-6.5-0.3-9.3-4.1-9.3-4.1"/>
+          <circle fill="#33DF93" cx="171" cy="93" r="18"/>
+          <circle fill="#33DF93" cx="43" cy="93" r="18"/>
+          <circle fill="#33DF93" cx="160" cy="68" r="18"/>
+          <circle fill="#33DF93" cx="135" cy="55" r="18"/>
+          <circle fill="#33DF93" cx="52" cy="68" r="18"/>
+          <circle fill="#33DF93" cx="77" cy="55" r="18"/>
+          <circle fill="#33DF93" cx="105" cy="50" r="18"/>
+        </svg>
+      </div>
+
+    </div><!-- /cards-stack -->
+
+    <!-- Small cards -->
+    <div class="small-row">
+      <div class="small-card sc-pink" onclick="goToCalendar()" style="cursor:pointer">
+        <div id="home-countdown" class="small-label" style="font-size:.78rem;line-height:1.5">ปฏิทินสอบ</div>
+      </div>
+      <div class="small-card sc-green" onclick="goToComingSoon('เกมอื่นๆ และแหล่งความรู้')">
+        <div class="small-label">เกมอื่นๆ<br>และแหล่งความรู้</div>
+      </div>
+    </div>
+
+  </div><!-- /home-col -->
+
+  <!-- Bottom Nav: 3 circles with exact icon SVGs from uploaded files -->
+  <div class="bottom-nav">
+
+    <!-- Icon-home (blue button) -->
+    <button class="nav-btn nb-blue">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10"
+          d="M41,45.1h-17c-1.1,0-2-0.9-2-2V29.7c0-1,0.5-1.9,1.2-2.5l7.3-5.6c1.1-0.9,2.7-0.9,3.8,0l7.3,5.6c0.8,0.6,1.2,1.5,1.2,2.5v13.4C42.9,44.2,42.1,45.1,41,45.1z"/>
+      </svg>
+    </button>
+
+    <!-- Icon-calendar (pink button) -->
+    <button class="nav-btn nb-pink" onclick="goToCalendar()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10"
+          d="M41.9,45h-19c-1.4,0-2.5-1.1-2.5-2.5v-19c0-1.4,1.1-2.5,2.5-2.5h19c1.4,0,2.5,1.1,2.5,2.5v19C44.4,43.9,43.2,45,41.9,45z"/>
+        <line fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" x1="20.4" y1="28.3" x2="44.4" y2="28.3"/>
+      </svg>
+    </button>
+
+    <!-- Icon-smile (green button) — stroke color changed to dark for green bg -->
+    <button class="nav-btn nb-green">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10"
+          d="M29.4,32c0,0,1,1,3,1s3-1,3-1"/>
+        <circle fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10"
+          cx="32.4" cy="33" r="12"/>
+        <circle fill="#fff" cx="28.9" cy="26.4" r="1.9"/>
+        <circle fill="#fff" cx="34.9" cy="26.4" r="1.9"/>
+      </svg>
+    </button>
+
+  </div>
+</div><!-- /home-screen -->
+
+
+<!-- ========== CALENDAR ========== -->
+<div class="screen" id="calendar-screen">
+  <div class="cal-header">
+    <button class="back-btn" style="border-color:rgba(255,255,255,.3)" onclick="goHome()">←</button>
+    <div>
+      <div class="cal-htitle">ปฏิทินสอบ</div>
+      <div class="cal-hsub">ตั้งวันสอบ · นับถอยหลัง</div>
+    </div>
+  </div>
+  <div class="cal-body">
+
+    <!-- Countdown display -->
+    <div id="cal-countdown-box" class="countdown-display empty">
+      <div class="cd-empty-text">ยังไม่ได้ตั้งวันสอบ<br>เลือกวันด้านล่างได้เลย</div>
+    </div>
+
+    <!-- ดูรอบสอบ (full width) -->
+    <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;cursor:pointer" onclick="toggleScheduleSection()">
+      <div style="display:flex;gap:5px;flex-shrink:0">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--blue);display:block"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--green);display:block"></span>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--pink);display:block"></span>
+      </div>
+      <div style="flex:1">
+        <div style="font-weight:700;font-family:'Prompt',sans-serif;font-size:.88rem;color:var(--black)">📋 ดูรอบสอบ</div>
+        <div style="font-size:.72rem;color:var(--muted);font-family:'Sarabun',sans-serif;margin-top:2px">ฉบับ 1 · 2 เดิม · 2 ใหม่ · ปี 2569</div>
+      </div>
+      <div style="font-size:.75rem;color:var(--blue);font-weight:700;flex-shrink:0">ดูตาราง ▾</div>
+    </div>
+
+    <!-- เลือกวันสอบ (full width) -->
+    <div class="date-picker-wrap">
+      <div class="date-picker-label" style="font-weight:700;color:var(--black);font-family:'Prompt',sans-serif;font-size:.88rem;margin-bottom:12px">📅 เลือกวันสอบ</div>
+      <input type="date" id="exam-date-input" style="width:100%;padding:13px 14px;border:2px solid #e0ded6;border-radius:11px;font-family:'Prompt',sans-serif;font-size:1rem;color:#1A1A1A;background:#fff;outline:none;box-sizing:border-box;display:block">
+      <button class="date-save-btn" onclick="saveExamDate()">บันทึกวันสอบ</button>
+      <button class="date-clear-btn" onclick="clearExamDate()">ล้างวันที่</button>
+    </div>
+
+    <!-- Schedule Accordion (hidden by default) -->
+    <div id="schedule-section" style="display:none">
+      <div class="cal-section-title">รอบสอบ CFP ปี 2569</div>
+      <div class="schedule-wrap">
+
+        <!-- ฉบับ 1 -->
+        <div class="sch-accordion">
+          <div class="sch-head" onclick="toggleAccordion('sch1')">
+            <div class="sch-dot sch-dot-1"></div>
+            <div class="sch-head-text">
+              <div class="sch-name">ฉบับที่ 1</div>
+              <div class="sch-sub">พื้นฐานการวางแผนการเงิน ภาษีและจรรยาบรรณ</div>
+            </div>
+            <div class="sch-arrow" id="arrow-sch1">▾</div>
+          </div>
+          <div class="sch-body" id="body-sch1">
+            <table class="sch-table">
+              <tr><th>รอบ</th><th>วัน / วันที่</th><th>เวลา</th></tr>
+              <tr><td><span class="sch-round">1/69</span></td><td>ส. 28 มี.ค. 69</td><td><div>09.00–12.00</div></td></tr>
+              <tr><td><span class="sch-round">2/69</span></td><td>ส. 30 พ.ค. 69</td><td><div>09.00–12.00</div></td></tr>
+              <tr><td><span class="sch-round">3/69</span></td><td>ส. 18 มิ.ย. 69</td><td><div>09.00–12.00</div></td></tr>
+              <tr><td><span class="sch-round">4/69</span></td><td>อา. 20 ก.ย. 69</td><td><div>09.00–12.00</div></td></tr>
+              <tr><td><span class="sch-round">5/69</span></td><td>ส. 21 พ.ย. 69</td><td><div>09.00–12.00</div></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ฉบับ 2 เดิม -->
+        <div class="sch-accordion">
+          <div class="sch-head" onclick="toggleAccordion('sch2')">
+            <div class="sch-dot sch-dot-2"></div>
+            <div class="sch-head-text">
+              <div class="sch-name">ฉบับที่ 2 (หลักสูตรเดิม 85 ข้อ)</div>
+              <div class="sch-sub">การวางแผนการลงทุน</div>
+            </div>
+            <div class="sch-arrow" id="arrow-sch2">▾</div>
+          </div>
+          <div class="sch-body" id="body-sch2">
+            <table class="sch-table">
+              <tr><th>รอบ</th><th>วัน / วันที่</th><th>เวลา</th></tr>
+              <tr><td><span class="sch-round" style="background:var(--green);color:var(--black)">1/69</span></td><td>ส. 28 มี.ค. 69</td><td><div>13.30–16.30</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--green);color:var(--black)">2/69</span></td><td>ส. 30 พ.ค. 69</td><td><div>13.30–16.30</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--green);color:var(--black)">3/69</span></td><td>ส. 18 มิ.ย. 69</td><td><div>13.30–16.30</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--green);color:var(--black)">4/69</span></td><td>อา. 20 ก.ย. 69</td><td><div>13.30–16.30</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--green);color:var(--black)">5/69</span></td><td>ส. 21 พ.ย. 69</td><td><div>13.30–16.30</div></td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- ฉบับ 2 ใหม่ -->
+        <div class="sch-accordion">
+          <div class="sch-head" onclick="toggleAccordion('sch3')">
+            <div class="sch-dot sch-dot-3"></div>
+            <div class="sch-head-text">
+              <div class="sch-name">ฉบับที่ 2 (หลักสูตรปรับปรุงใหม่ 120 ข้อ)</div>
+              <div class="sch-sub">การวางแผนการลงทุน</div>
+            </div>
+            <div class="sch-arrow" id="arrow-sch3">▾</div>
+          </div>
+          <div class="sch-body" id="body-sch3">
+            <table class="sch-table">
+              <tr><th>รอบ</th><th>วัน / วันที่</th><th>เวลา</th></tr>
+              <tr><td><span class="sch-round" style="background:var(--pink)">1/69</span></td><td>ส. 28 มี.ค. 69</td><td><div>13.30–18.00</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--pink)">2/69</span></td><td class="sch-na">—</td><td class="sch-na">ไม่เปิดสอบ</td></tr>
+              <tr><td><span class="sch-round" style="background:var(--pink)">3/69</span></td><td class="sch-na">—</td><td class="sch-na">ไม่เปิดสอบ</td></tr>
+              <tr><td><span class="sch-round" style="background:var(--pink)">4/69</span></td><td>อา. 20 ก.ย. 69</td><td><div>13.30–18.00</div></td></tr>
+              <tr><td><span class="sch-round" style="background:var(--pink)">5/69</span></td><td class="sch-na">—</td><td class="sch-na">ไม่เปิดสอบ</td></tr>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+  <!-- Bottom Nav -->
+  <div class="bottom-nav">
+    <button class="nav-btn nb-blue" onclick="goHome()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41,45.1h-17c-1.1,0-2-0.9-2-2V29.7c0-1,0.5-1.9,1.2-2.5l7.3-5.6c1.1-0.9,2.7-0.9,3.8,0l7.3,5.6c0.8,0.6,1.2,1.5,1.2,2.5v13.4C42.9,44.2,42.1,45.1,41,45.1z"/>
+      </svg>
+    </button>
+    <button class="nav-btn nb-pink" onclick="goToCalendar()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41.9,45h-19c-1.4,0-2.5-1.1-2.5-2.5v-19c0-1.4,1.1-2.5,2.5-2.5h19c1.4,0,2.5,1.1,2.5,2.5v19C44.4,43.9,43.2,45,41.9,45z"/>
+        <line fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" x1="20.4" y1="28.3" x2="44.4" y2="28.3"/>
+      </svg>
+    </button>
+    <button class="nav-btn nb-green">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45">
+        <path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" d="M29.4,32c0,0,1,1,3,1s3-1,3-1"/>
+        <circle fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" cx="32.4" cy="33" r="12"/>
+        <circle fill="#fff" cx="28.9" cy="26.4" r="1.9"/>
+        <circle fill="#fff" cx="34.9" cy="26.4" r="1.9"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- ========== LEVEL SELECT ========== -->
+<div class="screen" id="level-screen">
+  <div class="lvl-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div>
+      <div class="lvl-htitle">จรรยาบรรณ CFP2</div>
+      <div class="lvl-hsub">Drag &amp; Drop · เลือกด่าน</div>
+    </div>
+  </div>
+  <div class="lvl-list" id="lvl-list-container" style="padding-bottom:100px"></div>
+  <div class="bottom-nav">
+    <button class="nav-btn nb-blue" onclick="goHome()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41,45.1h-17c-1.1,0-2-0.9-2-2V29.7c0-1,0.5-1.9,1.2-2.5l7.3-5.6c1.1-0.9,2.7-0.9,3.8,0l7.3,5.6c0.8,0.6,1.2,1.5,1.2,2.5v13.4C42.9,44.2,42.1,45.1,41,45.1z"/></svg>
+    </button>
+    <button class="nav-btn nb-pink" onclick="goToCalendar()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41.9,45h-19c-1.4,0-2.5-1.1-2.5-2.5v-19c0-1.4,1.1-2.5,2.5-2.5h19c1.4,0,2.5,1.1,2.5,2.5v19C44.4,43.9,43.2,45,41.9,45z"/><line fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" x1="20.4" y1="28.3" x2="44.4" y2="28.3"/></svg>
+    </button>
+    <button class="nav-btn nb-green">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" d="M29.4,32c0,0,1,1,3,1s3-1,3-1"/><circle fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" cx="32.4" cy="33" r="12"/><circle fill="#fff" cx="28.9" cy="26.4" r="1.9"/><circle fill="#fff" cx="34.9" cy="26.4" r="1.9"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ========== GAME ========== -->
+<div class="screen" id="game-screen">
+  <div class="game-bar">
+    <button class="back-btn" onclick="confirmBack()">←</button>
+    <div class="gb-info">
+      <div class="gb-title" id="game-title">—</div>
+      <div class="gb-sub" id="game-sub">—</div>
+    </div>
+    <div class="timer-box" id="timer-box">
+      <div class="timer-val" id="timer-val">90</div>
+      <div class="timer-lbl">วินาที</div>
+    </div>
+  </div>
+  <div class="game-body" id="game-body"></div>
+</div>
+
+<!-- ========== RESULT ========== -->
+<div class="screen" id="result-screen">
+  <div class="result-hdr" id="result-hdr">
+    <span class="result-emoji" id="result-emoji">🎉</span>
+    <div class="result-heading" id="result-heading">ยอดเยี่ยม!</div>
+    <div class="result-sublabel" id="result-sublabel">—</div>
+  </div>
+  <div class="result-body">
+    <div class="score-card">
+      <div class="score-stat"><div class="score-val" id="r-score" style="color:var(--blue)">—</div><div class="score-lbl">คะแนน</div></div>
+      <div class="score-stat"><div class="score-val" id="r-correct" style="color:#22c07c">—</div><div class="score-lbl">ถูก/ทั้งหมด</div></div>
+      <div class="score-stat"><div class="score-val" id="r-time" style="color:#e76f51">—</div><div class="score-lbl">วินาทีที่ใช้</div></div>
+    </div>
+    <div class="review-box" id="review-box"></div>
+    <button class="btn-green" id="explain-btn" onclick="openExplain()" style="display:none">📖 คำอธิบายเพิ่มเติม</button>
+    <div class="result-btns">
+      <button class="btn-blue" onclick="retryLevel()">🔄 เล่นอีกครั้ง</button>
+      <button class="btn-outline" onclick="backToLevels()">← เลือกด่าน</button>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-btn nb-blue" onclick="goHome()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41,45.1h-17c-1.1,0-2-0.9-2-2V29.7c0-1,0.5-1.9,1.2-2.5l7.3-5.6c1.1-0.9,2.7-0.9,3.8,0l7.3,5.6c0.8,0.6,1.2,1.5,1.2,2.5v13.4C42.9,44.2,42.1,45.1,41,45.1z"/></svg>
+    </button>
+    <button class="nav-btn nb-pink" onclick="goToCalendar()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41.9,45h-19c-1.4,0-2.5-1.1-2.5-2.5v-19c0-1.4,1.1-2.5,2.5-2.5h19c1.4,0,2.5,1.1,2.5,2.5v19C44.4,43.9,43.2,45,41.9,45z"/><line fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" x1="20.4" y1="28.3" x2="44.4" y2="28.3"/></svg>
+    </button>
+    <button class="nav-btn nb-green">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" d="M29.4,32c0,0,1,1,3,1s3-1,3-1"/><circle fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" cx="32.4" cy="33" r="12"/><circle fill="#fff" cx="28.9" cy="26.4" r="1.9"/><circle fill="#fff" cx="34.9" cy="26.4" r="1.9"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="explain-modal" onclick="closeOuter(event,'explain-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">📖 คำอธิบายเพิ่มเติม</div>
+    <div id="explain-content"></div>
+    <button class="modal-close" onclick="closeModal('explain-modal')">ปิด</button>
+  </div>
+</div>
+
+<script>
+const LEVELS=[
+{
+  name:"เหมาะสม VS ไม่เหมาะสม",lesson:"แนวปฏิบัติในการขายและการให้บริการ",lessonOrder:1,sub:"แยกแยะพฤติกรรม · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">เหมาะสม VS ไม่เหมาะสม</span><br>
+<span style="color:var(--blue);font-weight:700">■ เหมาะสม</span> &nbsp;·&nbsp;
+<span style="color:#e63946;font-weight:700">■ ไม่เหมาะสม</span>`,
+  columns:["เหมาะสม","ไม่เหมาะสม"],
+  words:[
+    {text:"UHNW นิติบุคคล ยกเว้น\nKnowledge Assessment\nแต่ต้องแสดงเจตนาลายลักษณ์อักษร",col:0,
+     desc:"<b>เหมาะสม</b><br>ผู้ลงทุนรายใหญ่ที่เป็นนิติบุคคลและเป็น UHNW สามารถยกเว้นการทำ Knowledge Assessment ได้ แต่ต้องแสดงเจตนาเป็นลายลักษณ์อักษร"},
+    {text:"IC และ IP ดูแลลูกค้า\nอายุตั้งแต่ 60 ปี เป็นพิเศษ",col:0,
+     desc:"<b>เหมาะสม</b><br>ผู้ที่อายุตั้งแต่ 60 ปีขึ้นไปจัดเป็นกลุ่มเปราะบาง ควรได้รับการคุ้มครองและดูแลมากกว่าปกติ เช่นเดียวกับผู้พิการ และผู้มีความรู้ทางการเงินจำกัดหรือไม่มีประสบการณ์การลงทุน"},
+    {text:"บริษัทแยก\nFront office และ\nBack office",col:0,
+     desc:"<b>เหมาะสม</b><br>การแยก Front office และ Back office ป้องกันความขัดแย้งทางผลประโยชน์ และป้องกันการใช้ข้อมูลภายใน"},
+    {text:"ผู้แนะนำเก็บเอกสาร\nลูกค้าไว้กับตนเอง\nเพื่อความปลอดภัย",col:1,
+     desc:"<b>ไม่เหมาะสม</b><br>ผู้แนะนำการลงทุนไม่ควรเก็บเอกสารของลูกค้าไว้กับตนเอง เพราะอาจเกิดกรณีที่ผู้แนะนำการลงทุนปลอมแปลงเอกสารลูกค้าได้"},
+    {text:"กำหนดค่าตอบแทน\nแบบขายมากได้มาก",col:1,
+     desc:"<b>ไม่เหมาะสม</b><br>การจ่ายแบบขายมากได้มาก อาจทำให้เกิด product-focused และนำไปสู่ Mis-selling เนื่องจากผู้แนะนำจูงใจให้ขายมากกว่าดูแลประโยชน์ลูกค้า"},
+    {text:"ผู้แนะนำการลงทุน\nวางแผนการลงทุน\nให้ลูกค้า",col:1,
+     desc:"<b>ไม่เหมาะสม</b><br>ผู้แนะนำการลงทุนไม่มีสิทธิ์วางแผนการลงทุนให้ลูกค้า ผู้ที่สามารถวางแผนการลงทุนได้คือ นักวางแผนการลงทุน (Investment Planner) เท่านั้น"},
+  ]
+},{
+  name:"บทลงโทษทางปกครอง",lesson:"มาตรฐานการปฏิบัติงาน",lessonOrder:2,sub:"จับกลุ่ม 3 ระดับ · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">บทลงโทษทางปกครอง</span> มี 3 ระดับตามความร้ายแรง<br>
+<span style="color:var(--blue);font-weight:700">■ ระดับที่ 1</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ ระดับที่ 2</span> &nbsp;·&nbsp;
+<span style="color:#cc00cc;font-weight:700">■ ระดับที่ 3</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">Note: 1=ไม่มีผู้เสียหาย · 2=ลูกค้าเสียหาย · 3=ผิดกฎหมาย</span>`,
+  columns:["■ ระดับที่ 1","■ ระดับที่ 2","■ ระดับที่ 3"],
+  words:[
+    {text:"เปิดเผยพฤติกรรม\nที่ไม่เหมาะสม",col:0,
+     desc:"<b>ระดับที่ 1 — บทลงโทษ</b><br>ก.ล.ต. ประกาศชื่อและเปิดเผยพฤติกรรมที่ไม่เหมาะสมให้ประชาชนรับทราบ<br><br><b>ตัวอย่างความผิด:</b> วิเคราะห์ลูกค้าไม่รอบคอบ, สื่อสารไม่ชัดเจน, การันตีผลตอบแทน<br>ผิดจรรยาบรรณแต่ยังไม่ผิดกฎหมาย"},
+    {text:"ทำหน้าที่ต่อได้\nห้ามทำผิดซ้ำภายใน 1 ปี",col:0,
+     desc:"<b>ระดับที่ 1 — เงื่อนไข</b><br>ยังคงทำหน้าที่ต่อไปได้ตามปกติ แต่ต้องไม่กระทำความผิดในเรื่องเดิมซ้ำอีกภายใน 1 ปี"},
+    {text:"พักการให้\nความเห็นชอบ",col:1,
+     desc:"<b>ระดับที่ 2 — บทลงโทษ</b><br>ถูกพักการให้ความเห็นชอบตามความร้ายแรง<br><br><b>ตัวอย่างความผิด:</b> ขายแบบ Mis-selling, เปิดเผยข้อมูลลูกค้าจนเสียหาย, แอบอ้างใบอนุญาตที่ไม่มี"},
+    {text:"พักตั้งแต่ 1 เดือน\nถึง 2 ปี",col:1,
+     desc:"<b>ระดับที่ 2 — ระยะเวลา</b><br>ระยะเวลาพักการให้ความเห็นชอบตั้งแต่ 1 เดือน ถึง 2 ปี ตามที่คำสั่งพักกำหนด"},
+    {text:"เพิกถอนการให้\nความเห็นชอบ",col:2,
+     desc:"<b>ระดับที่ 3 — บทลงโทษ</b><br>ถูกเพิกถอนการให้ความเห็นชอบ ซึ่งเป็นโทษสูงสุด<br><br><b>ตัวอย่างความผิด:</b> ฉ้อโกง, ยักยอกเงินผู้ลงทุน, ปลอมแปลงเอกสาร, มีผู้เสียหายจำนวนมาก"},
+    {text:"เพิกถอนตั้งแต่ 1 ปี\nถึง 10 ปี",col:2,
+     desc:"<b>ระดับที่ 3 — ระยะเวลา</b><br>ระยะเวลาเพิกถอนการให้ความเห็นชอบตั้งแต่ 1 ถึง 10 ปี ความผิดระดับนี้มีความผิดทางกฎหมายร่วมด้วย"},
+  ]
+},{
+  name:"ตัวอย่างความผิด — บทลงโทษ",lesson:"มาตรฐานการปฏิบัติงาน",lessonOrder:2,sub:"จับกลุ่ม 3 ประเภท · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">ลากตัวอย่างความผิดไปใส่บทลงโทษที่ถูกต้อง</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">Note: 1=ไม่มีผู้เสียหาย · 2=ลูกค้าเสียหาย · 3=ผิดกฎหมาย</span>`,
+  columns:["เปิดเผยพฤติกรรม\nที่ไม่เหมาะสม","พักการให้\nความเห็นชอบ","เพิกถอนการให้\nความเห็นชอบ"],
+  words:[
+    {text:"วิเคราะห์ลูกค้า\nไม่รอบคอบ",col:0,
+     desc:"<b>ระดับที่ 1</b><br>การวิเคราะห์ลูกค้าไม่รอบคอบทำให้บริษัทเสียชื่อ แต่ยังไม่มีผู้เสียหายโดยตรง บทลงโทษคือเปิดเผยพฤติกรรม"},
+    {text:"การันตี\nผลตอบแทน",col:0,
+     desc:"<b>ระดับที่ 1</b><br>การการันตีผลตอบแทนเป็นการให้ข้อมูลเท็จ ผิดจรรยาบรรณแต่ยังไม่ถึงขั้นทำให้ลูกค้าเสียทรัพย์จริง"},
+    {text:"ขายแบบ\nMis-selling",col:1,
+     desc:"<b>ระดับที่ 2</b><br>การขายแบบ Mis-selling ทำให้ลูกค้าซื้อผลิตภัณฑ์ที่ไม่เหมาะสม เกิดความเสียหายโดยตรง"},
+    {text:"แอบอ้างใบอนุญาต\nที่ไม่มี",col:1,
+     desc:"<b>ระดับที่ 2</b><br>การแอบอ้างใบอนุญาตที่ไม่มี เช่น เพื่อเสนอขายตราสารซับซ้อน เข้าข่าย Misrepresentation (การให้ข้อมูลเท็จ) ซึ่งเป็นรูปแบบหนึ่งของ Mis-selling ที่รุนแรง"},
+    {text:"ฉ้อโกง /\nยักยอกเงิน",col:2,
+     desc:"<b>ระดับที่ 3</b><br>การฉ้อโกงหรือยักยอกเงินผู้ลงทุนเป็นความผิดทางกฎหมาย โทษสูงสุดคือเพิกถอนการให้ความเห็นชอบ"},
+    {text:"ปลอมแปลงเอกสาร",col:2,
+     desc:"<b>ระดับที่ 3</b><br>การปลอมแปลงเอกสารเป็นความผิดทางอาญาตามกฎหมาย บทลงโทษทางปกครอง คือเพิกถอนสูงสุด 1-10 ปี"},
+  ]
+},{
+  name:"การสร้างและบริหารกลุ่มหลักทรัพย์",lesson:"การให้คำแนะนำการลงทุนที่เหมาะสม",lessonOrder:3,sub:"จับกลุ่ม 2 ประเภท · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">การสร้างและบริหารกลุ่มหลักทรัพย์</span><br>
+<span style="color:var(--blue);font-weight:700">■ การสร้างกลุ่มหลักทรัพย์</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ การบริหารกลุ่มหลักทรัพย์</span>`,
+  columns:["การสร้างกลุ่ม\nหลักทรัพย์ลงทุน","การบริหารกลุ่ม\nหลักทรัพย์"],
+  words:[
+    {text:"การแบ่งกลุ่มย่อย\n(Sub-class)",col:0,
+     desc:"<b>การแบ่งกลุ่มย่อย (Sub-class)</b><br>การจัดแบ่งสินทรัพย์ออกเป็นกลุ่มย่อยตามลักษณะและความเสี่ยง เพื่อการกระจายการลงทุนที่มีประสิทธิภาพ"},
+    {text:"การคัดเลือกหลักทรัพย์\n(Securities Selection)",col:0,
+     desc:"<b>การคัดเลือกหลักทรัพย์ (Securities Selection)</b><br>กระบวนการเลือกหลักทรัพย์ที่เหมาะสมเพื่อนำเข้ากลุ่มการลงทุน โดยพิจารณาจากปัจจัยต่างๆ"},
+    {text:"วิเคราะห์\nปัจจัยพื้นฐาน",col:0,
+     desc:"<b>วิเคราะห์ปัจจัยพื้นฐาน</b><br>การวิเคราะห์มูลค่าที่แท้จริงของหลักทรัพย์จากข้อมูลทางการเงิน เศรษฐกิจ และธุรกิจของบริษัท"},
+    {text:"วิเคราะห์\nปัจจัยทางเทคนิค",col:0,
+     desc:"<b>วิเคราะห์ปัจจัยทางเทคนิค</b><br>การวิเคราะห์แนวโน้มราคาและปริมาณการซื้อขายจากกราฟและสถิติในอดีต เพื่อคาดการณ์ทิศทางราคา"},
+    {text:"วิเคราะห์การเงิน\nเชิงพฤติกรรม",col:0,
+     desc:"<b>วิเคราะห์การเงินเชิงพฤติกรรม</b><br>การศึกษาผลกระทบของจิตวิทยาและอารมณ์ของนักลงทุนต่อการตัดสินใจและราคาตลาด"},
+    {text:"การบริหารเชิงรุก\n(Active Management)",col:1,
+     desc:"<b>การบริหารเชิงรุก (Active Portfolio Management)</b><br>พยายามสร้างอัตราผลตอบแทนมากกว่าตลาด โดยการเลือกหลักทรัพย์และจังหวะการลงทุนอย่างแข็งขัน"},
+    {text:"พยายามสร้างผลตอบแทน\nมากกว่าตลาด",col:1,
+     desc:"<b>เป้าหมายของ Active Management</b><br>มุ่งสร้างผลตอบแทนส่วนเกิน (Alpha) เหนือกว่าดัชนีอ้างอิง แลกกับต้นทุนการบริหารที่สูงกว่า"},
+    {text:"การบริหารเชิงรับ\n(Passive Management)",col:1,
+     desc:"<b>การบริหารเชิงรับ (Passive Portfolio Management)</b><br>พยายามสร้างอัตราผลตอบแทนให้เท่ากับหรือใกล้เคียงตลาด เช่น การลงทุนใน Index Fund"},
+    {text:"พยายามสร้างผลตอบแทน\nเท่ากับหรือใกล้เคียงตลาด",col:1,
+     desc:"<b>เป้าหมายของ Passive Management</b><br>ติดตามดัชนีอ้างอิง (Benchmark) โดยมีต้นทุนต่ำกว่า Active Management เหมาะกับตลาดที่มีประสิทธิภาพสูง"},
+  ]
+}
+];
+
+let curLvl=0,timerInt=null,timeLeft=90,startTime=null,elapsed=0;
+let score=0,correct=0,total=0,answers=[];
+let wordEls={},placed={};
+let dragIdx=null,dragEl=null,ghost=null;
+
+function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function goHome(){clearInterval(timerInt);showScreen('home-screen');updateHomeCountdown()}
+function goToComingSoon(name){
+  document.getElementById('cs-title-text').textContent=name;
+  showScreen('coming-soon-screen');
+}
+function goToCalendar(){showScreen('calendar-screen');renderCalCountdown();var saved=localStorage.getItem(EXAM_KEY);var el=document.getElementById('exam-date-input');if(el&&saved)el.value=saved;}
+
+function toggleScheduleSection(){
+  var s = document.getElementById('schedule-section');
+  if(!s) return;
+  var isHidden = s.style.display === 'none' || s.style.display === '';
+  if(isHidden){
+    s.style.display = 'block';
+    setTimeout(function(){
+      s.scrollIntoView({behavior:'smooth', block:'start'});
+    }, 50);
+  } else {
+    s.style.display = 'none';
+  }
+}
+
+function toggleAccordion(id){
+  var body = document.getElementById('body-'+id);
+  var arrow = document.getElementById('arrow-'+id);
+  if(!body) return;
+  var isOpen = body.classList.contains('open');
+  // close all
+  document.querySelectorAll('.sch-body').forEach(function(b){b.classList.remove('open')});
+  document.querySelectorAll('.sch-arrow').forEach(function(a){a.classList.remove('open')});
+  // open clicked if was closed
+  if(!isOpen){
+    body.classList.add('open');
+    arrow.classList.add('open');
+  }
+}
+
+const EXAM_KEY='cfp_exam_date';
+function saveExamDate(){
+  var val=document.getElementById('exam-date-input').value;
+  if(!val)return;
+  localStorage.setItem(EXAM_KEY,val);
+  renderCalCountdown();updateHomeCountdown();
+}
+function clearExamDate(){
+  localStorage.removeItem(EXAM_KEY);
+  var el=document.getElementById('exam-date-input');
+  if(el)el.value='';
+  renderCalCountdown();updateHomeCountdown();
+}
+function getCountdownData(){
+  var saved=localStorage.getItem(EXAM_KEY);
+  if(!saved)return null;
+  var exam=new Date(saved+'T00:00:00');
+  var now=new Date();now.setHours(0,0,0,0);
+  var diffMs=exam-now;
+  var days=Math.ceil(diffMs/(1000*60*60*24));
+  return{days:days,hours:days*24,dateStr:saved};
+}
+function renderCalCountdown(){
+  var box=document.getElementById('cal-countdown-box');
+  var input=document.getElementById('exam-date-input');
+  var data=getCountdownData();
+  if(!data){
+    box.className='countdown-display empty';
+    box.innerHTML='<div class="cd-empty-text">ยังไม่ได้ตั้งวันสอบ<br>เลือกวันด้านล่างได้เลย</div>';
+    return;
+  }
+  input.value=data.dateStr;
+  box.className='countdown-display';
+  if(data.days<0){
+    box.innerHTML='<div class="cd-days">หมดเวลา</div><div class="cd-label">ผ่านวันสอบไปแล้ว</div>';
+  } else if(data.days===0){
+    box.innerHTML='<div class="cd-days">วันนี้!</div><div class="cd-label">โชคดีนะ!</div>';
+  } else {
+    box.innerHTML='<div class="cd-days">'+data.days+'</div><div class="cd-label">วันที่เหลือก่อนสอบ</div><div class="cd-hours">('+data.hours.toLocaleString()+' ชั่วโมง)</div>';
+  }
+}
+function updateHomeCountdown(){
+  var el=document.getElementById('home-countdown');if(!el)return;
+  var data=getCountdownData();
+  if(!data){el.innerHTML='ปฏิทินสอบ';return;}
+  if(data.days<0){
+    el.innerHTML='ปฏิทินสอบ<br><span style="font-size:.85rem">หมดเวลาแล้ว</span>';
+  } else if(data.days===0){
+    el.innerHTML='วันสอบ<br><span style="font-size:1.1rem;font-weight:800">วันนี้! 🎯</span>';
+  } else {
+    el.innerHTML='เหลืออีก<br><span style="font-size:1.2rem;font-weight:800">'+data.days+' วัน</span><br><span style="font-size:.72rem;opacity:.85">('+data.hours.toLocaleString()+' ชั่วโมง)</span>';
+  }
+}
+// load handler moved above
+function goToLevelSelect(){showScreen('level-screen');renderLevelList()}
+
+function renderLevelList(){
+  // Sort by lessonOrder then by original index
+  var sorted = LEVELS.map(function(l,i){return{lvl:l,idx:i}});
+  sorted.sort(function(a,b){
+    if(a.lvl.lessonOrder !== b.lvl.lessonOrder) return a.lvl.lessonOrder - b.lvl.lessonOrder;
+    return a.idx - b.idx;
+  });
+
+  var container = document.getElementById('lvl-list-container');
+  container.innerHTML = '';
+  sorted.forEach(function(item, num){
+    var l = item.lvl; var i = item.idx;
+    var div = document.createElement('div');
+    div.className = 'lvl-item';
+    div.onclick = function(){startLevel(i)};
+    div.innerHTML =
+      '<div class="lvl-num" style="background:var(--blue);color:#fff">'+(num+1)+'</div>'+
+      '<div style="flex:1">'+
+        '<div class="lvl-name">'+l.name+'</div>'+
+        '<div class="lvl-meta">'+l.lesson+' · '+l.sub+'</div>'+
+      '</div>'+
+      '<span class="lvl-badge badge-free">ฟรี</span>';
+    container.appendChild(div);
+  });
+
+  // Update CFP2 card-sub
+  var lessons = [...new Set(LEVELS.map(function(l){return l.lesson}))].length;
+  var el = document.getElementById('cfp2-card-sub');
+  if(el) el.textContent = lessons+' บทเรียน · '+LEVELS.length+' ด่าน';
+}
+
+// Init card-sub on load
+window.addEventListener('load',function(){
+  updateHomeCountdown();
+  var saved=localStorage.getItem(EXAM_KEY);
+  var el=document.getElementById('exam-date-input');
+  if(el&&saved)el.value=saved;
+  var lessons=[...new Set(LEVELS.map(function(l){return l.lesson}))].length;
+  var el=document.getElementById('cfp2-card-sub');
+  if(el)el.textContent=lessons+' บทเรียน · '+LEVELS.length+' ด่าน';
+});
+function backToLevels(){showScreen('level-screen')}
+function confirmBack(){clearInterval(timerInt);backToLevels()}
+
+function startLevel(idx){
+  curLvl=idx;const lvl=LEVELS[idx];
+  timeLeft=lvl.time;score=0;correct=0;total=0;answers=[];placed={};wordEls={};dragIdx=null;
+  document.getElementById('game-title').textContent=lvl.name;
+  document.getElementById('game-sub').textContent=lvl.sub;
+  document.getElementById('timer-val').textContent=timeLeft;
+  document.getElementById('timer-box').classList.remove('urgent');
+  const body=document.getElementById('game-body');body.innerHTML='';
+  buildGroup(lvl,body);showScreen('game-screen');
+  startTime=Date.now();clearInterval(timerInt);timerInt=setInterval(tick,1000);
+}
+
+function buildGroup(lvl,body){
+  total=lvl.words.length;
+  if(lvl.desc){const d=document.createElement('div');d.className='desc-banner';d.innerHTML=lvl.desc;body.appendChild(d)}
+  const n=lvl.columns.length;
+  const hdr=document.createElement('div');hdr.className='cols-header';hdr.style.gridTemplateColumns=`repeat(${n},1fr)`;
+  lvl.columns.forEach((c,i)=>{const h=document.createElement('div');h.className=`col-head ch${i}`;h.innerHTML=c.replace(/\n/g,'<br>');hdr.appendChild(h)});
+  body.appendChild(hdr);
+  const dzW=document.createElement('div');dzW.className='drop-zones';dzW.style.gridTemplateColumns=`repeat(${n},1fr)`;
+  lvl.columns.forEach((_,i)=>{
+    const dz=document.createElement('div');dz.className=`drop-zone dz${i}`;dz.dataset.col=i;
+    dz.innerHTML=`<div class="dz-hint">วางที่นี่</div>`;
+    dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
+    dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+    dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');doDrop(parseInt(dz.dataset.col),dz);resumeAudio();playDrop()});
+    dzW.appendChild(dz);
+  });
+  body.appendChild(dzW);
+  const wbl=document.createElement('div');wbl.className='wb-label';wbl.textContent='— ลากคำไปวางในหมวดที่ถูกต้อง —';body.appendChild(wbl);
+  const bank=document.createElement('div');bank.className='word-bank';
+  lvl.words.map((_,i)=>i).sort(()=>Math.random()-.5).forEach(i=>{const c=makeCard(i,lvl.words[i].text);bank.appendChild(c);wordEls[i]=c});
+  body.appendChild(bank);
+  const sw=document.createElement('div');sw.className='submit-wrap';
+  sw.innerHTML=`<button class="submit-btn" onclick="resumeAudio();playSubmit();submitGroup()">✓ ตรวจคำตอบ</button>`;
+  body.appendChild(sw);
+}
+
+function makeCard(idx,text){
+  const c=document.createElement('div');c.className='word-card';c.dataset.idx=idx;
+  c.innerHTML=text.replace(/\n/g,'<br>');c.draggable=true;
+  c.addEventListener('dragstart',e=>{dragIdx=idx;e.dataTransfer.setData('text/plain',idx);c.classList.add('dragging')});
+  c.addEventListener('dragend',()=>c.classList.remove('dragging'));
+  c.addEventListener('touchstart',tStart,{passive:false});
+  c.addEventListener('touchmove',tMove,{passive:false});
+  c.addEventListener('touchend',tEnd);
+  return c;
+}
+function doDrop(col,dz){
+  if(dragIdx===null)return;const card=wordEls[dragIdx];if(!card)return;
+  card.classList.remove('dragging');card.remove();
+  const hint=dz.querySelector('.dz-hint');if(hint)hint.style.display='none';
+  dz.appendChild(card);card.className=`word-card placed-${col%3}`;placed[dragIdx]=col;
+}
+function submitGroup(){
+  clearInterval(timerInt);elapsed=Math.round((Date.now()-startTime)/1000);
+  const lvl=LEVELS[curLvl];score=0;correct=0;
+  lvl.words.forEach((w,i)=>{const my=placed[i];const ok=my===w.col;if(ok){correct++;score+=10;}
+    answers.push({word:w.text.replace(/\n/g,' '),my:my!==undefined?lvl.columns[my].split('\n')[0]:'ไม่ได้วาง',right:lvl.columns[w.col].split('\n')[0],ok,desc:w.desc||''})});
+  total=lvl.words.length;showResult();
+}
+function tStart(e){
+  e.preventDefault();const c=e.currentTarget;dragIdx=parseInt(c.dataset.idx);dragEl=c;
+  const t=e.touches[0];ghost=document.createElement('div');ghost.className='drag-ghost';
+  ghost.innerHTML=c.innerHTML;document.body.appendChild(ghost);moveGhost(t.clientX,t.clientY);c.classList.add('dragging');
+}
+function tMove(e){
+  if(!ghost)return;e.preventDefault();const t=e.touches[0];moveGhost(t.clientX,t.clientY);
+  document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('drag-over'));
+  const el=document.elementFromPoint(t.clientX,t.clientY);const dz=el?el.closest('.drop-zone'):null;
+  if(dz)dz.classList.add('drag-over');
+}
+function tEnd(e){
+  if(!ghost)return;const t=e.changedTouches[0];
+  document.querySelectorAll('.drop-zone').forEach(z=>z.classList.remove('drag-over'));
+  const el=document.elementFromPoint(t.clientX,t.clientY);const dz=el?el.closest('.drop-zone'):null;
+  if(dz){doDrop(parseInt(dz.dataset.col),dz);resumeAudio();playDrop();}
+  if(dragEl)dragEl.classList.remove('dragging');ghost.remove();ghost=null;dragEl=null;dragIdx=null;
+}
+function moveGhost(x,y){if(ghost){ghost.style.left=x+'px';ghost.style.top=y+'px'}}
+function tick(){timeLeft--;document.getElementById('timer-val').textContent=timeLeft;if(timeLeft<=10)document.getElementById('timer-box').classList.add('urgent');if(timeLeft<=0)submitGroup();}
+function showResult(){
+  const ratio=correct/total;
+  document.getElementById('result-sublabel').textContent=LEVELS[curLvl].name;
+  document.getElementById('r-score').textContent=`${score}/${total*10}`;
+  document.getElementById('r-correct').textContent=`${correct}/${total}`;
+  document.getElementById('r-time').textContent=elapsed+'s';
+  let emoji,heading,bg;
+  if(ratio===1){emoji='🏆';heading='สมบูรณ์แบบ!';bg='rgba(51,223,147,.22)'}
+  else if(ratio>=.7){emoji='😊';heading='ทำได้ดีมาก!';bg='rgba(226,255,30,.3)'}
+  else if(ratio>=.5){emoji='😅';heading='พยายามต่อไป!';bg='rgba(5,73,254,.08)'}
+  else{emoji='😓';heading='ต้องฝึกอีกหน่อย!';bg='rgba(255,83,255,.1)'}
+  document.getElementById('result-emoji').textContent=emoji;
+  document.getElementById('result-heading').textContent=heading;
+  document.getElementById('result-hdr').style.background=bg;
+  buildReview();document.getElementById('explain-btn').style.display=answers.some(a=>a.desc)?'':'none';
+  showScreen('result-screen');if(ratio===1)spawnConfetti();
+}
+function buildReview(){
+  const box=document.getElementById('review-box');box.innerHTML='<div class="review-hd">สรุปผล</div>';
+  answers.forEach(a=>{const d=document.createElement('div');d.className='review-item';
+    d.innerHTML=`<div class="rv-dot ${a.ok?'dot-ok':'dot-no'}"></div><div class="rv-word">${a.word}</div><div class="rv-ans ${a.ok?'ok':'no'}">${a.ok?'✓ '+a.right:a.my+' ✗'}</div>`;
+    box.appendChild(d);});
+}
+function retryLevel(){startLevel(curLvl)}
+function openExplain(){
+  const c=document.getElementById('explain-content');c.innerHTML='';
+  answers.filter(a=>a.desc).forEach(a=>{const d=document.createElement('div');d.className='exp-item';
+    d.innerHTML=`<div class="exp-term">${a.word}</div><div class="exp-text">${a.desc}</div>`;c.appendChild(d);});
+  openModal('explain-modal');
+}
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+function closeOuter(e,id){if(e.target===document.getElementById(id))closeModal(id)}
+function spawnConfetti(){
+  const w=document.createElement('div');w.className='confetti-wrap';document.body.appendChild(w);
+  const cols=['#0549FE','#33DF93','#FF53FF','#E2FF50','#1a1a1a'];
+  for(let i=0;i<60;i++){const d=document.createElement('div');d.className='confetti-dot';
+    d.style.left=Math.random()*100+'vw';d.style.background=cols[Math.floor(Math.random()*cols.length)];
+    d.style.animationDuration=(1.5+Math.random()*2)+'s';d.style.animationDelay=Math.random()*.8+'s';
+    const s=(6+Math.random()*8)+'px';d.style.width=d.style.height=s;w.appendChild(d);}
+  setTimeout(()=>w.remove(),3500);
+}
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+function resumeAudio(){if(AC.state==='suspended')AC.resume()}
+function playDrop(){try{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.setValueAtTime(600,AC.currentTime);o.frequency.exponentialRampToValueAtTime(400,AC.currentTime+.08);g.gain.setValueAtTime(.12,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.1);o.start();o.stop(AC.currentTime+.1)}catch(e){}}
+function playSubmit(){try{[0,.12,.24].forEach((t,i)=>{const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.frequency.setValueAtTime([440,550,660][i],AC.currentTime+t);g.gain.setValueAtTime(.1,AC.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+t+.15);o.start(AC.currentTime+t);o.stop(AC.currentTime+t+.15)})}catch(e){}}
+
+// ===== FINGER-1 EYE ANIMATION =====
+(function(){
+  // Eye center positions (in SVG viewBox coords)
+  var EYE_L = {cx:69, cy:116};  // center of left white eye
+  var EYE_R = {cx:127, cy:116}; // center of right white eye
+  var RADIUS = 11; // max pupil travel from eye center
+  // Mouth paths
+  var MOUTH_SMILE  = 'M89,160c0,0,1.3,2.2,5.7,2.1c6.5-0.3,9.3-4.1,9.3-4.1';
+  var MOUTH_SHOCKED = 'M92,156 Q94.7,167 97.5,156'; // oval shape pointing down
+
+  // Sequence: left, up, right, down (shocked), back to smile
+  var SEQ = [
+    {dx:-1, dy:0,  mouth:'smile',   dur:600},
+    {dx:0,  dy:-1, mouth:'smile',   dur:600},
+    {dx:1,  dy:0,  mouth:'smile',   dur:600},
+    {dx:0,  dy:1,  mouth:'shocked', dur:900},
+    {dx:0,  dy:0,  mouth:'smile',   dur:5000},
+  ];
+
+  function setPupils(dx, dy){
+    var pl = document.getElementById('f1-pupil-l');
+    var pr = document.getElementById('f1-pupil-r');
+    if(!pl||!pr) return;
+    pl.setAttribute('cx', EYE_L.cx + dx*RADIUS);
+    pl.setAttribute('cy', EYE_L.cy + dy*RADIUS);
+    pr.setAttribute('cx', EYE_R.cx + dx*RADIUS);
+    pr.setAttribute('cy', EYE_R.cy + dy*RADIUS);
+  }
+
+  function setMouth(type){
+    var m = document.getElementById('f1-mouth');
+    if(!m) return;
+    if(type === 'shocked'){
+      m.setAttribute('d', MOUTH_SHOCKED);
+      m.setAttribute('fill', '#1A1A1A');
+      m.setAttribute('stroke', 'none');
+    } else {
+      m.setAttribute('d', MOUTH_SMILE);
+      m.setAttribute('fill', 'none');
+      m.setAttribute('stroke', '#1A1A1A');
+    }
+  }
+
+  function runAnim(){
+    var i = 0;
+    function step(){
+      if(i >= SEQ.length){ i=0; }
+      var s = SEQ[i];
+      setPupils(s.dx, s.dy);
+      setMouth(s.mouth);
+      i++;
+      setTimeout(step, s.dur);
+    }
+    step();
+  }
+
+  window.addEventListener('load', function(){
+    setTimeout(runAnim, 800); // เริ่มหลัง page load 0.8 วิ
+  });
+})();
+
+
+// ===== FINGER-2 EYE ANIMATION =====
+(function(){
+  var EYE_R = {cx:161, cy:135}; // right eye center
+  var EYE_L = {cx:103, cy:135}; // left eye center
+  var RADIUS = 11;
+  var MOUTH_SMILE   = 'M130,179c0,0-1.3,2.2-5.7,2.1c-6.5-0.3-9.3-4.1-9.3-4.1';
+  var MOUTH_SHOCKED = 'M124,174 Q126.7,185 129.5,174';
+
+  // ขวา → บน → ซ้าย → ลง(ปากตกใจ) → หยุด
+  // delay 2.0วิ ให้ "บน" ตรงกับ "ลง-ตกใจ" ของตัว 1
+  var SEQ = [
+    {dx:1,  dy:0,  mouth:'smile',   dur:600},
+    {dx:0,  dy:-1, mouth:'shocked', dur:600},  // บน = ตรงกับที่ตัว 1 มองลง
+    {dx:-1, dy:0,  mouth:'smile',   dur:600},
+    {dx:0,  dy:1,  mouth:'smile',   dur:900},
+    {dx:0,  dy:0,  mouth:'smile',   dur:5000},
+  ];
+
+  function setPupils(dx, dy){
+    var pr = document.getElementById('f2-pupil-r');
+    var pl = document.getElementById('f2-pupil-l');
+    if(!pr||!pl) return;
+    pr.setAttribute('cx', EYE_R.cx + dx*RADIUS);
+    pr.setAttribute('cy', EYE_R.cy + dy*RADIUS);
+    pl.setAttribute('cx', EYE_L.cx + dx*RADIUS);
+    pl.setAttribute('cy', EYE_L.cy + dy*RADIUS);
+  }
+
+  function setMouth(type){
+    var m = document.getElementById('f2-mouth');
+    if(!m) return;
+    if(type === 'shocked'){
+      m.setAttribute('d', MOUTH_SHOCKED);
+      m.setAttribute('fill', '#1A1A1A');
+      m.setAttribute('stroke', 'none');
+    } else {
+      m.setAttribute('d', MOUTH_SMILE);
+      m.setAttribute('fill', 'none');
+      m.setAttribute('stroke', '#1A1A1A');
+    }
+  }
+
+  function runAnim(){
+    var i = 0;
+    function step(){
+      if(i >= SEQ.length){ i=0; }
+      var s = SEQ[i];
+      setPupils(s.dx, s.dy);
+      setMouth(s.mouth);
+      i++;
+      setTimeout(step, s.dur);
+    }
+    step();
+  }
+
+  window.addEventListener('load', function(){
+    // delay 2.0วิ: 0.8(load wait) + 0.6+0.6 = ให้ step "บน" ตรงกับตัว 1 step "ลง"
+    setTimeout(runAnim, 2000);
+  });
+})();
+
+</script>
+
+<!-- COMING SOON -->
+<div class="screen" id="coming-soon-screen">
+  <div class="cs-header">
+    <button class="back-btn" onclick="goHome()">←</button>
+    <div>
+      <div class="cs-htitle" id="cs-title-text">CFP1</div>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);font-family:'Sarabun',sans-serif">กำลังดำเนินการ</div>
+    </div>
+  </div>
+  <div class="cs-body">
+    <div class="cs-icon">🚧</div>
+    <div class="cs-title">อยู่ระหว่างดำเนินการ</div>
+    <div class="cs-sub">เนื้อหาส่วนนี้กำลังอยู่ระหว่างการพัฒนา<br>โปรดติดตามการอัปเดตเร็วๆ นี้</div>
+    <button class="btn-blue" style="margin-top:12px" onclick="goHome()">← กลับหน้าหลัก</button>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-btn nb-blue" onclick="goHome()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41,45.1h-17c-1.1,0-2-0.9-2-2V29.7c0-1,0.5-1.9,1.2-2.5l7.3-5.6c1.1-0.9,2.7-0.9,3.8,0l7.3,5.6c0.8,0.6,1.2,1.5,1.2,2.5v13.4C42.9,44.2,42.1,45.1,41,45.1z"/></svg>
+    </button>
+    <button class="nav-btn nb-pink" onclick="goToCalendar()">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" d="M41.9,45h-19c-1.4,0-2.5-1.1-2.5-2.5v-19c0-1.4,1.1-2.5,2.5-2.5h19c1.4,0,2.5,1.1,2.5,2.5v19C44.4,43.9,43.2,45,41.9,45z"/><line fill="none" stroke="#fff" stroke-width="2" stroke-miterlimit="10" x1="20.4" y1="28.3" x2="44.4" y2="28.3"/></svg>
+    </button>
+    <button class="nav-btn nb-green">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 66 66" width="45" height="45"><path fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" d="M29.4,32c0,0,1,1,3,1s3-1,3-1"/><circle fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-miterlimit="10" cx="32.4" cy="33" r="12"/><circle fill="#fff" cx="28.9" cy="26.4" r="1.9"/><circle fill="#fff" cx="34.9" cy="26.4" r="1.9"/></svg>
+    </button>
+  </div>
+</div>
+</body>
+</html>
