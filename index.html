@@ -10,7 +10,7 @@
   --bg:     #FFFFEB;
   --blue:   #0549FE;
   --green:  #33DF93;
-  --yellow: #E2FF1E;
+  --yellow: #EDFF28;
   --pink:   #FF53FF;
   --black:  #1A1A1A;
   --gold:   #E4D64D;
@@ -106,8 +106,8 @@ body{background:var(--bg);font-family:'Prompt',sans-serif;color:var(--black);min
   align-items:flex-end;
   z-index:2
 }
-.card-label{font-size:2.2rem;font-weight:800;color:#fff;line-height:1;margin-bottom:5px;letter-spacing:2px}
-.card-sub{font-size:.78rem;color:rgba(255,255,255,.58);font-family:'Sarabun',sans-serif}
+.card-label{font-size:2.31rem;font-weight:800;color:#fff;line-height:1;margin-bottom:1px;letter-spacing:2px}
+.card-sub{font-size:.82rem;color:rgba(255,255,255,.58)}
 
 /* ===== CHARACTERS =====
   finger-1.svg viewBox 215x260, green shape inside: x=48..181(w=133), y=22..259(h=237)
@@ -200,7 +200,7 @@ body{background:var(--bg);font-family:'Prompt',sans-serif;color:var(--black);min
 }
 .bottom-nav-line{
   width:100%;max-width:420px;
-  height:2px;background:var(--border);
+  height:0;background:transparent;
   margin-bottom:12px
 }
 .bottom-nav-btns{
@@ -538,8 +538,8 @@ body{background:var(--bg);font-family:'Prompt',sans-serif;color:var(--black);min
       <div class="main-card card-cfp1" onclick="goToComingSoon('CFP1')" style="cursor:pointer">
         <div class="card-inner">
           <div>
-            <div class="card-label">CFP1</div>
-            <div class="card-sub">1 บทเรียน · 1 ด่าน</div>
+            <div class="card-label" style="color:var(--yellow)">CFP1</div>
+            <div class="card-sub" style="color:#fff;opacity:1;font-weight:600">1 บทเรียน <span style="font-size:3em;line-height:0;vertical-align:middle">·</span> 1 ด่าน</div>
           </div>
         </div>
       </div>
@@ -566,8 +566,8 @@ body{background:var(--bg);font-family:'Prompt',sans-serif;color:var(--black);min
       <div class="main-card card-cfp2" onclick="goToLevelSelect()">
         <div class="card-inner-right">
           <div style="text-align:right">
-            <div class="card-label">CFP2</div>
-            <div class="card-sub" id="cfp2-card-sub">— กำลังโหลด —</div>
+            <div class="card-label" style="color:var(--yellow)">CFP2</div>
+            <div class="card-sub" id="cfp2-card-sub" style="color:#fff;opacity:1;font-weight:600">— กำลังโหลด —</div>
           </div>
         </div>
       </div>
@@ -961,6 +961,120 @@ const LEVELS=[
     {text:"พยายามสร้างผลตอบแทน\nเท่ากับหรือใกล้เคียงตลาด",col:1,
      desc:"<b>เป้าหมายของ Passive Management</b><br>ติดตามดัชนีอ้างอิง (Benchmark) โดยมีต้นทุนต่ำกว่า Active Management เหมาะกับตลาดที่มีประสิทธิภาพสูง"},
   ]
+},{
+  name:"ประเภทผู้ลงทุน — รายย่อย VS รายใหญ่",lesson:"แนวปฏิบัติในการขายและการให้บริการ",lessonOrder:1,sub:"แยกประเภทผู้ลงทุน · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">ประเภทผู้ลงทุน</span><br>
+<span style="color:var(--blue);font-weight:700">■ รายย่อย (Retail)</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ รายใหญ่ (Accredited)</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">Note: รายใหญ่ได้รับความคุ้มครองน้อยกว่า แต่ลงทุนได้กว้างกว่า</span>`,
+  columns:["รายย่อย\n(Retail Investor)","รายใหญ่\n(Accredited Investor)"],
+  words:[
+    {text:"ต้องผ่าน\nKnowledge Assessment",col:0,
+     desc:"<b>Retail Investor</b><br>ผู้ลงทุนรายย่อยต้องผ่านการทดสอบความรู้ (Knowledge Assessment) ก่อนลงทุนในผลิตภัณฑ์ที่ซับซ้อน เพื่อปกป้องผู้ลงทุนจากความเสี่ยงที่ไม่เข้าใจ"},
+    {text:"ได้รับความคุ้มครอง\nสูงสุด",col:0,
+     desc:"<b>Retail Investor</b><br>ผู้ลงทุนรายย่อยได้รับการคุ้มครองสูงที่สุด เนื่องจากอาจขาดความรู้และประสบการณ์การลงทุน กฎหมายจึงกำหนดมาตรการปกป้องไว้เข้มงวด"},
+    {text:"ต้องทำ Suitability\nทุกครั้ง",col:0,
+     desc:"<b>Retail Investor</b><br>ผู้แนะนำต้องตรวจสอบความเหมาะสม (Suitability) ก่อนแนะนำผลิตภัณฑ์ทุกครั้ง เพื่อให้แน่ใจว่าผลิตภัณฑ์เหมาะสมกับสถานะและเป้าหมายของลูกค้า"},
+    {text:"สินทรัพย์สุทธิ\n> 50 ล้านบาท",col:1,
+     desc:"<b>Accredited Investor — เกณฑ์รายบุคคล</b><br>บุคคลธรรมดาที่มีสินทรัพย์สุทธิ (หักหนี้แล้ว) มากกว่า 50 ล้านบาท จัดเป็นผู้ลงทุนรายใหญ่ และได้รับการยกเว้นข้อกำหนดบางประการ"},
+    {text:"รายได้ต่อปี\n> 4 ล้านบาท",col:1,
+     desc:"<b>Accredited Investor — เกณฑ์รายได้</b><br>บุคคลธรรมดาที่มีรายได้ต่อปีมากกว่า 4 ล้านบาท ถือเป็นผู้ลงทุนรายใหญ่ โดยสามารถลงทุนในผลิตภัณฑ์ที่หลากหลายกว่า"},
+    {text:"ยกเว้น Knowledge\nAssessment ได้",col:1,
+     desc:"<b>Accredited Investor</b><br>ผู้ลงทุนรายใหญ่ประเภท UHNW หรือนิติบุคคล สามารถยกเว้นการทำ Knowledge Assessment ได้ แต่ต้องแสดงเจตนาเป็นลายลักษณ์อักษร"},
+  ]
+},{
+  name:"คุณสมบัติลูกค้ากลุ่มเปราะบาง",lesson:"แนวปฏิบัติในการขายและการให้บริการ",lessonOrder:1,sub:"แยกกลุ่มเปราะบาง VS ไม่ใช่ · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">คุณสมบัติลูกค้ากลุ่มเปราะบาง</span><br>
+<span style="color:var(--blue);font-weight:700">■ กลุ่มเปราะบาง</span> &nbsp;·&nbsp;
+<span style="color:#e63946;font-weight:700">■ ไม่ใช่กลุ่มเปราะบาง</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">คุณสมบัติกลุ่มเปราะบาง: อายุ 60+ / ไม่มีประสบการณ์ลงทุน / ความรู้การเงินจำกัด / มีข้อจำกัดด้านการสื่อสาร (มองเห็น/ได้ยิน) — ยึดตามหนังสือเป็นหลัก</span>`,
+  columns:["ลูกค้ากลุ่มเปราะบาง","ไม่ใช่กลุ่มเปราะบาง"],
+  words:[
+    {text:"อายุ 60 ปี ขึ้นไป",col:0,
+     desc:"<b>กลุ่มเปราะบาง</b><br>ผู้ที่มีอายุตั้งแต่ 60 ปีขึ้นไป จัดอยู่ในกลุ่มเปราะบาง ต้องได้รับการดูแลและคุ้มครองเป็นพิเศษจาก IC และ IP"},
+    {text:"ไม่มีประสบการณ์\nด้านลงทุน",col:0,
+     desc:"<b>กลุ่มเปราะบาง</b><br>ผู้ที่ไม่มีประสบการณ์ลงทุนมาก่อน อาจไม่เข้าใจความเสี่ยงและลักษณะของผลิตภัณฑ์ จึงจัดเป็นกลุ่มเปราะบางที่ต้องได้รับการดูแลพิเศษ"},
+    {text:"มีความรู้ด้านการเงิน\nการลงทุนอย่างจำกัด",col:0,
+     desc:"<b>กลุ่มเปราะบาง</b><br>ผู้ที่มีความรู้ด้านการเงินและการลงทุนอย่างจำกัด อาจตัดสินใจโดยขาดข้อมูล จึงจัดเป็นกลุ่มเปราะบางที่ต้องระมัดระวังในการให้คำแนะนำ"},
+    {text:"มีข้อจำกัด\nด้านการมองเห็น",col:0,
+     desc:"<b>กลุ่มเปราะบาง</b><br>ผู้ที่มีข้อจำกัดด้านการสื่อสาร เช่น การมองเห็น หรือการได้ยิน จัดเป็นกลุ่มเปราะบาง เนื่องจากอาจรับข้อมูลและเงื่อนไขการลงทุนได้ไม่ครบถ้วน"},
+    {text:"อายุ 55 ปี\nและใกล้เกษียณ",col:1,
+     desc:"<b>ไม่ใช่กลุ่มเปราะบาง</b><br>เกณฑ์อายุของกลุ่มเปราะบางคือ 60 ปีขึ้นไป อายุ 55 ปีจึงยังไม่เข้าเกณฑ์ แม้จะใกล้เกษียณก็ตาม — ในการสอบมักยึดตามหนังสือเป็นหลัก"},
+    {text:"มีหนี้สิน\nจำนวนมาก",col:1,
+     desc:"<b>ไม่ใช่กลุ่มเปราะบาง</b><br>การมีหนี้สินจำนวนมากเป็นเรื่องของสถานะทางการเงิน ไม่ใช่คุณสมบัติของกลุ่มเปราะบางตามนิยามในหนังสือ"},
+    {text:"เพิ่งตกงาน",col:1,
+     desc:"<b>ไม่ใช่กลุ่มเปราะบาง</b><br>การตกงานเป็นสถานการณ์ชั่วคราว ไม่ใช่คุณสมบัติที่ทำให้จัดอยู่ในกลุ่มเปราะบางตามนิยามในหนังสือ"},
+    {text:"มูลค่าพอร์ตลงทุน\nติดลบเกิน 80%",col:1,
+     desc:"<b>ไม่ใช่กลุ่มเปราะบาง</b><br>ผลขาดทุนในพอร์ตการลงทุนไม่ได้จัดเป็นคุณสมบัติของกลุ่มเปราะบาง กลุ่มเปราะบางพิจารณาจากอายุ ประสบการณ์ ความรู้ และข้อจำกัดการสื่อสารเท่านั้น"},
+  ]
+},{
+  name:"Watch list VS Restricted list",lesson:"แนวปฏิบัติในการขายและการให้บริการ",lessonOrder:1,sub:"แยกข้อปฏิบัติ 2 บัญชี · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">Watch list VS Restricted list</span><br>
+<span style="color:var(--blue);font-weight:700">■ Watch list (W/L)</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ Restricted list (R/L)</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">W/L = deal ยังไม่เปิดเผย · R/L = เปิดเผยต่อสาธารณะแล้ว</span>`,
+  columns:["Watch list\n(W/L)","Restricted list\n(R/L)"],
+  words:[
+    {text:"deal ยังไม่เปิดเผย\nแก่สาธารณชน",col:0,
+     desc:"<b>Watch list</b><br>เงื่อนไขการเข้า W/L คือความสัมพันธ์หรือ deal ยังไม่เปิดเผยต่อสาธารณชน รู้ได้เฉพาะหน่วยงานและพนักงานที่ปฏิบัติหน้าที่ที่เกี่ยวข้องเท่านั้น"},
+    {text:"รู้ได้เฉพาะพนักงาน\nที่เกี่ยวข้องเท่านั้น",col:0,
+     desc:"<b>Watch list</b><br>ข้อมูลใน W/L จำกัดเฉพาะหน่วยงานและพนักงานที่ปฏิบัติหน้าที่เกี่ยวข้องโดยตรง ไม่เปิดเผยในวงกว้าง"},
+    {text:"ห้ามพนักงาน\nที่เกี่ยวข้องซื้อหรือขาย\nหลักทรัพย์",col:0,
+     desc:"<b>Watch list</b><br>ห้ามเฉพาะพนักงานที่เกี่ยวข้องซื้อหรือขายหลักทรัพย์ในบัญชี W/L ทั้งเพื่อตนเองและลูกค้า"},
+    {text:"บล. เปิดเผยความสัมพันธ์\nรายชื่อหลักทรัพย์\nแก่สาธารณชนแล้ว",col:1,
+     desc:"<b>Restricted list</b><br>เงื่อนไขการเข้า R/L คือ บล. เปิดเผยความสัมพันธ์รายชื่อหลักทรัพย์ต่อสาธารณชนแล้ว พนักงานทุกคนจึงได้รับทราบ"},
+    {text:"ห้ามพนักงาน\nทุกคนซื้อหรือขาย\nเพื่อตนเอง",col:1,
+     desc:"<b>Restricted list</b><br>ห้ามพนักงานทุกคน (ไม่ใช่เฉพาะที่เกี่ยวข้อง) ซื้อหรือขายหลักทรัพย์เพื่อประโยชน์ส่วนตน"},
+    {text:"ห้ามบริษัทซื้อหรือขาย\nหลักทรัพย์เพื่อบริษัท",col:1,
+     desc:"<b>Restricted list</b><br>นอกจากห้ามพนักงานแล้ว ยังห้ามบริษัทดำเนินการซื้อหรือขายหลักทรัพย์นั้นเพื่อประโยชน์ของบริษัทเองด้วย"},
+    {text:"ห้ามชักชวน\nและให้คำแนะนำ",col:1,
+     desc:"<b>Restricted list</b><br>ห้ามพนักงานชักชวนลูกค้าหรือให้คำแนะนำเกี่ยวกับหลักทรัพย์ที่อยู่ใน R/L ไม่ว่าในกรณีใด"},
+    {text:"ห้ามออก\nบทวิเคราะห์",col:1,
+     desc:"<b>Restricted list</b><br>ห้ามออกบทวิเคราะห์หลักทรัพย์ที่อยู่ใน R/L เพื่อป้องกันการใช้ประโยชน์จากข้อมูลภายในในรูปแบบการวิเคราะห์"},
+  ]
+},{
+  name:"กระบวนการร้องเรียน — ลำดับขั้นตอน",lesson:"มาตรฐานการปฏิบัติงาน",lessonOrder:2,sub:"เรียงลำดับขั้นตอน · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">กระบวนการร้องเรียนและระงับข้อพิพาท</span><br>
+<span style="color:var(--blue);font-weight:700">■ ภายในบริษัท</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ หน่วยงานภายนอก</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">Note: เริ่มจากภายในก่อน แล้วค่อยไปภายนอก</span>`,
+  columns:["ระงับข้อพิพาท\nภายในบริษัท","ยกระดับสู่\nหน่วยงานภายนอก"],
+  words:[
+    {text:"แจ้งผู้แนะนำ\nการลงทุนโดยตรง",col:0,
+     desc:"<b>ขั้นตอนแรก — ภายในบริษัท</b><br>ลูกค้าควรแจ้งปัญหาหรือข้อร้องเรียนให้ผู้แนะนำการลงทุนที่ดูแลรับทราบก่อนเป็นอันดับแรก"},
+    {text:"ยื่นเรื่องที่\nฝ่ายลูกค้าสัมพันธ์",col:0,
+     desc:"<b>ขั้นตอนที่สอง — ภายในบริษัท</b><br>หากไม่ได้รับการแก้ไข ลูกค้าสามารถยื่นเรื่องอย่างเป็นทางการที่ฝ่ายลูกค้าสัมพันธ์ (Customer Service) ของบริษัท"},
+    {text:"ร้องเรียนผ่าน\nสมาคม บล. / บลจ.",col:0,
+     desc:"<b>ภายในอุตสาหกรรม</b><br>สมาคมบริษัทหลักทรัพย์ (บล.) หรือสมาคมบริษัทจัดการลงทุน (บลจ.) มีช่องทางรับเรื่องร้องเรียนและไกล่เกลี่ยข้อพิพาทในอุตสาหกรรม"},
+    {text:"ร้องเรียน\nต่อ ก.ล.ต.",col:1,
+     desc:"<b>หน่วยงานกำกับดูแล</b><br>ก.ล.ต. (สำนักงานคณะกรรมการกำกับหลักทรัพย์และตลาดหลักทรัพย์) รับเรื่องร้องเรียนเกี่ยวกับการกระทำผิดกฎหมายหลักทรัพย์"},
+    {text:"ร้องเรียน\nต่อ ศคง.",col:1,
+     desc:"<b>ศูนย์คุ้มครองผู้ใช้บริการทางการเงิน (ศคง.)</b><br>หน่วยงานภายใต้ ธนาคารแห่งประเทศไทย รับเรื่องร้องเรียนด้านการเงินของผู้บริโภค"},
+    {text:"ฟ้องร้องทาง\nศาล / อนุญาโตตุลาการ",col:1,
+     desc:"<b>กระบวนการทางกฎหมาย</b><br>หากทุกช่องทางไม่เป็นผล ลูกค้ามีสิทธิ์ฟ้องร้องต่อศาลหรือใช้กระบวนการอนุญาโตตุลาการเพื่อระงับข้อพิพาท"},
+  ]
+},{
+  name:"Risk Profile — ประเภทความเสี่ยง",lesson:"การให้คำแนะนำการลงทุนที่เหมาะสม",lessonOrder:3,sub:"จับกลุ่ม 3 ประเภท · 90 วินาที",time:90,
+  desc:`<span style="font-weight:700;color:var(--black)">ระดับความเสี่ยงที่ยอมรับได้</span><br>
+<span style="color:var(--blue);font-weight:700">■ ความเสี่ยงต่ำ</span> &nbsp;·&nbsp;
+<span style="color:#22a070;font-weight:700">■ ความเสี่ยงปานกลาง</span> &nbsp;·&nbsp;
+<span style="color:#cc00cc;font-weight:700">■ ความเสี่ยงสูง</span><br>
+<span style="font-family:'Sarabun',sans-serif;font-size:.78rem;color:var(--muted)">ลากสินทรัพย์ไปใส่ระดับความเสี่ยงที่เหมาะสม</span>`,
+  columns:["ความเสี่ยงต่ำ\n(Conservative)","ความเสี่ยงปานกลาง\n(Moderate)","ความเสี่ยงสูง\n(Aggressive)"],
+  words:[
+    {text:"พันธบัตรรัฐบาล\nระยะสั้น",col:0,
+     desc:"<b>ความเสี่ยงต่ำ</b><br>พันธบัตรรัฐบาลมีความเสี่ยงต่ำที่สุด เนื่องจากรัฐบาลเป็นผู้ออกและค้ำประกัน โอกาสผิดนัดชำระหนี้แทบเป็นศูนย์"},
+    {text:"เงินฝากประจำ\n/ ตั๋วเงินคลัง",col:0,
+     desc:"<b>ความเสี่ยงต่ำ</b><br>เงินฝากประจำได้รับการคุ้มครองจากสถาบันคุ้มครองเงินฝาก (สคฝ.) และให้ผลตอบแทนแน่นอน เหมาะกับผู้ที่รับความเสี่ยงได้น้อย"},
+    {text:"กองทุนรวม\nตราสารหนี้",col:1,
+     desc:"<b>ความเสี่ยงปานกลาง</b><br>กองทุนตราสารหนี้ลงทุนในหุ้นกู้และพันธบัตร มีความผันผวนมากกว่าเงินฝาก แต่น้อยกว่าหุ้น เหมาะกับผู้ต้องการผลตอบแทนสม่ำเสมอ"},
+    {text:"กองทุนรวม\nผสม (Balanced Fund)",col:1,
+     desc:"<b>ความเสี่ยงปานกลาง</b><br>Balanced Fund ลงทุนทั้งหุ้นและตราสารหนี้ในสัดส่วนที่กำหนด ช่วยกระจายความเสี่ยงและให้ผลตอบแทนสมดุล"},
+    {text:"หุ้นสามัญ\n(Common Stock)",col:2,
+     desc:"<b>ความเสี่ยงสูง</b><br>การลงทุนในหุ้นมีความผันผวนสูง ราคาอาจขึ้นลงมากตามสภาพตลาดและผลประกอบการของบริษัท แต่มีโอกาสสร้างผลตอบแทนสูงในระยะยาว"},
+    {text:"กองทุนรวม\nหุ้น / ETF",col:2,
+     desc:"<b>ความเสี่ยงสูง</b><br>กองทุนหุ้นและ ETF ลงทุนในตลาดหุ้นเป็นหลัก มีความผันผวนสูงตามตลาด เหมาะกับผู้ที่รับความเสี่ยงได้สูงและมีระยะเวลาลงทุนยาว"},
+  ]
 }
 ];
 
@@ -1072,25 +1186,27 @@ function renderLevelList(){
 
   var container = document.getElementById('lvl-list-container');
   container.innerHTML = '';
+  var lessonColors={1:'background:var(--blue);color:#fff',2:'background:var(--pink);color:#fff',3:'background:var(--green);color:var(--black)'};
   sorted.forEach(function(item, num){
     var l = item.lvl; var i = item.idx;
+    var numStyle = lessonColors[l.lessonOrder] || 'background:var(--blue);color:#fff';
     var div = document.createElement('div');
     div.className = 'lvl-item';
     div.onclick = function(){startLevel(i)};
     div.innerHTML =
-      '<div class="lvl-num" style="background:var(--blue);color:#fff">'+(num+1)+'</div>'+
+      '<div class="lvl-num" style="'+numStyle+'">'+(num+1)+'</div>'+
       '<div style="flex:1">'+
         '<div class="lvl-name">'+l.name+'</div>'+
         '<div class="lvl-meta">'+l.lesson+' · '+l.sub+'</div>'+
       '</div>'+
-      '<span class="lvl-badge badge-free">ฟรี</span>';
+      '';
     container.appendChild(div);
   });
 
   // Update CFP2 card-sub
   var lessons = [...new Set(LEVELS.map(function(l){return l.lesson}))].length;
   var el = document.getElementById('cfp2-card-sub');
-  if(el) el.textContent = lessons+' บทเรียน · '+LEVELS.length+' ด่าน';
+  if(el) el.innerHTML = lessons+' บทเรียน <span style="font-size:3em;line-height:0;vertical-align:middle">·</span> '+LEVELS.length+' ด่าน';
 }
 
 // Init card-sub on load
@@ -1101,7 +1217,7 @@ window.addEventListener('load',function(){
   if(el&&saved)el.value=saved;
   var lessons=[...new Set(LEVELS.map(function(l){return l.lesson}))].length;
   var el=document.getElementById('cfp2-card-sub');
-  if(el)el.textContent=lessons+' บทเรียน · '+LEVELS.length+' ด่าน';
+  if(el)el.innerHTML=lessons+' บทเรียน <span style="font-size:3em;line-height:0;vertical-align:middle">·</span> '+LEVELS.length+' ด่าน';
 });
 function backToLevels(){showScreen('level-screen')}
 function confirmBack(){clearInterval(timerInt);backToLevels()}
